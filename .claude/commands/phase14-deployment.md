@@ -5,7 +5,7 @@ If `skills/INFRA_STANDARD.md` exists, read it and follow its conventions for Doc
 Read these context files before proceeding:
 - BRD: `docs/brd.md`
 - Architecture: `docs/architecture.md` — data models, auth strategy
-- Documentation from Phase 14 — environment variable docs
+- Documentation from Phase 13 — environment variable docs
 
 Generate the following:
 - Dockerfile(s) for backend and frontend

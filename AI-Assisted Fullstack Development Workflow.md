@@ -29,7 +29,7 @@ TASK     — What to produce
 
 **Context** is always anchored by the BRD. Most phases only need BRD + the immediate prior output. Some later phases require multi-source context — these are flagged below with ⚠️.
 
-**BRD Slicing Convention:** For module-level phases (4, 5, 9, 10, 11), extract only the relevant module's requirements, acceptance criteria, and error states from the BRD rather than including the full document. This keeps context focused and avoids hitting context window limits on larger projects. The full BRD is used for cross-cutting phases (2, 3, 7, 12, 13, 14, 15).
+**BRD Slicing Convention:** For module-level phases (4, 5, 8, 9, 10), extract only the relevant module's requirements, acceptance criteria, and error states from the BRD rather than including the full document. This keeps context focused and avoids hitting context window limits on larger projects. The full BRD is used for cross-cutting phases (2, 3, 7, 11, 12, 13, 14).
 
 **Task** is the specific deliverable for the phase.
 
@@ -52,9 +52,9 @@ Most phases consume skills, but some phases *produce* skill documents that later
 
 | Producer Phase | Skill Produced | Consumer Phases |
 |---|---|---|
-| Phase 3 — Architecture | `ARCHITECTURE_STANDARD.md` (if not already cross-project) | Phases 4, 5, 6, 13 |
-| Phase 8 — Style Guide | `STYLE_GUIDE.md` (per-project) | Phase 10 |
-| First run of Phase 5 | `TESTING_CONVENTIONS.md` (if not already cross-project) | Phases 5, 11, 12 |
+| Phase 3 — Architecture | `ARCHITECTURE_STANDARD.md` (if not already cross-project) | Phases 4, 5, 6, 12 |
+| Phase 7 — UI/UX Design | `STYLE_GUIDE.md` (per-project) | Phase 9 |
+| First run of Phase 5 | `TESTING_CONVENTIONS.md` (if not already cross-project) | Phases 5, 10, 11 |
 
 Cross-project skills (`MODULE_TEMPLATE`, `API_STANDARD`, `TESTING_CONVENTIONS`, etc.) stabilize after 2–3 projects. Per-project skills (`STYLE_GUIDE`) are generated fresh each time.
 
@@ -82,15 +82,15 @@ Common mistakes to explicitly avoid.
 | 4 — Backend Modules | `MODULE_TEMPLATE.md` | File structure, naming, Zod patterns, controller patterns | ✅ Cross-project |
 | 5 — Backend Testing | `TESTING_CONVENTIONS.md` | Behavioral testing approach — test what the user/caller experiences, not implementation details. File structure, naming, coverage rules | ✅ Cross-project |
 | 6 — Migrations | `MIGRATION_TEMPLATE.md` | Migration file naming, index conventions, seed data format | ✅ Cross-project |
-| 9 — Frontend Modules | `API_STANDARD.md` | Zod copy rules, hook patterns, service layer structure, endpoint config | ✅ Cross-project |
-| 10 — Pages | `STYLE_GUIDE.md` | Visual rules extracted from Phase 8 screenshots — colors, spacing, typography, component styling. Tailwind + shadcn/ui as the component system | 🔁 Per-project |
-| 11 — Frontend Testing | `TESTING_CONVENTIONS.md` | Same as Phase 5 — behavioral focus. Test user interactions and outcomes, not component internals | ✅ Cross-project |
-| 12 — E2E Testing | `E2E_PATTERNS.md` | Selector strategy, fixture structure, flow test patterns | ✅ Cross-project |
-| 13 — Code Review | `REVIEW_CHECKLIST.md` | Security checks, performance checks, consistency rules | ✅ Cross-project |
-| 14 — Documentation | `DOC_TEMPLATES.md` | README structure, API doc format, onboarding guide template | ✅ Cross-project |
-| 15 — Deployment | `INFRA_STANDARD.md` | Dockerfile patterns, CI/CD template, env config conventions | ✅ Cross-project |
+| 8 — Frontend Modules | `API_STANDARD.md` | Zod copy rules, hook patterns, service layer structure, endpoint config | ✅ Cross-project |
+| 9 — Pages | `STYLE_GUIDE.md` | Visual rules extracted from Phase 7 — colors, spacing, typography, component styling. Tailwind + shadcn/ui as the component system | 🔁 Per-project |
+| 10 — Frontend Testing | `TESTING_CONVENTIONS.md` | Same as Phase 5 — behavioral focus. Test user interactions and outcomes, not component internals | ✅ Cross-project |
+| 11 — E2E Testing | `E2E_PATTERNS.md` | Selector strategy, fixture structure, flow test patterns | ✅ Cross-project |
+| 12 — Code Review | `REVIEW_CHECKLIST.md` | Security checks, performance checks, consistency rules | ✅ Cross-project |
+| 13 — Documentation | `DOC_TEMPLATES.md` | README structure, API doc format, onboarding guide template | ✅ Cross-project |
+| 14 — Deployment | `INFRA_STANDARD.md` | Dockerfile patterns, CI/CD template, env config conventions | ✅ Cross-project |
 
-**Note:** Phases 2 (Project Planning) and 7 (UI Design) do not require skill documents. These phases benefit from persona flexibility — rigid templates would constrain the AI's ability to think broadly about planning and design. Phase 1 (Business Requirements) uses `BRD_FORMAT.md` to ensure consistent, testable requirement structure. Phase 8 (Style Guide) does not consume a skill but *produces* one.
+**Note:** Phase 2 (Project Planning) does not require a skill document — persona flexibility is preferred for planning. Phase 1 uses `BRD_FORMAT.md` for consistent requirement structure. Phase 7 (UI/UX Design) does not consume a skill but *produces* one (`STYLE_GUIDE.md`).
 
 **Note on Component Library:** This workflow uses Tailwind CSS + shadcn/ui as the design system. This replaces the need for a dedicated shared component library generation phase — the component system already exists. The style guide skill ensures the AI uses it consistently.
 
@@ -126,18 +126,17 @@ PHASE 1 — Business Requirements ✅ VERIFY
               │     ├── PHASE 5 — Backend Testing
               │     └── PHASE 6 — DB Migrations & Seed Data
               │
-              └── PHASE 7 — UI/UX Design
-                    └── PHASE 8 — Style Guide
-                          └── PHASE 9 — Frontend API Modules (copies Zod from Phase 4)
-                                └── PHASE 10 — Page Generation (mock data from Zod)
-                                      └── PHASE 11 — Frontend Testing
-                                            └── PHASE 12 — Integration & E2E Testing
-                                                  └── PHASE 13 — Code Review
-                                                        └── PHASE 14 — Documentation
-                                                              └── PHASE 15 — Deployment Config
+              └── PHASE 7 — UI/UX Design & Style Guide (→ docs/ui-design.md)
+                          └── PHASE 8 — Frontend API Modules (copies Zod from Phase 4)
+                                └── PHASE 9 — Page Generation (uses ui-design.md + Phase 8 hooks)
+                                      └── PHASE 10 — Frontend Testing
+                                            └── PHASE 11 — Integration & E2E Testing
+                                                  └── PHASE 12 — Code Review
+                                                        └── PHASE 13 — Documentation
+                                                              └── PHASE 14 — Deployment Config
 ```
 
-**Parallel tracks:** Once Phase 3 is verified, the backend track (Phases 4–6) and the design track (Phases 7–8) can proceed in parallel. The frontend track (Phases 9–11) begins once both Phase 4 and Phase 8 are complete.
+**Parallel tracks:** Once Phase 3 is verified, the backend track (Phases 4–6) and the design track (Phase 7) can proceed in parallel. The frontend track (Phases 8+) begins once both Phase 4 and Phase 7 are complete.
 
 ---
 
@@ -389,17 +388,17 @@ TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 
 ---
 
-## PHASE 7 — UI/UX Design
+## PHASE 7 — UI/UX Design & Style Guide
 
 | | |
 |---|---|
 | **Persona** | Professional UI Designer |
-| **Skill** | None — persona flexibility preferred for creative design work |
+| **Skill** | None — this phase *produces* a skill document (`STYLE_GUIDE.md`) used by Phase 9 |
 | **Context** | BRD (Page Manifest from user stories) + Phase 3 output (route map) + optional reference screenshots + optional design rules |
-| **Output** | Design system summary, wireframes/mockups, component inventory, user flows |
-| **Gate** | Review against Page Manifest — every page must have a wireframe |
+| **Output** | `docs/ui-design.md` (wireframes, flows, states) + `skills/STYLE_GUIDE.md` (code-ready Tailwind/shadcn rules) |
+| **Gate** | Every page in the Page Manifest has a wireframe. Every style guide rule has exact values. |
 
-**Input:** Optionally pass reference screenshots and/or design rules as arguments. Screenshots are analyzed to extract colors, typography, spacing, and component patterns. Design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
+**Input:** Optionally pass reference screenshots and/or design rules as arguments. Screenshots are analyzed to extract colors, typography, spacing, and component patterns — visual style only, not features. Design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
 
 **Prompt:**
 ```
@@ -411,7 +410,7 @@ API Surface: {PHASE 3 — route map}
 Reference Screenshots: {OPTIONAL — images to extract visual style from}
 Design Rules: {OPTIONAL — e.g., "mobile first", "dark mode default"}
 
-TASK: Generate the following:
+OUTPUT 1 — UI Design Document (docs/ui-design.md):
 - Design system summary (color palette, typography, spacing — extracted from
   screenshots if provided, or sensible defaults)
 - Page inventory pulled from the BRD Page Manifest — do not invent pages
@@ -420,37 +419,15 @@ TASK: Generate the following:
 - Component inventory (reusable UI components)
 - Responsive behavior (breakpoints, layout adaptation per breakpoint)
 - State designs for each page: loading, empty, error, populated
-```
 
-**Human Review Focus:** Does every page in the Page Manifest have a wireframe? If screenshots were provided, do the extracted styles match? Are the user flows complete? Are error/empty states accounted for?
-
----
-
-## PHASE 8 — Style Guide
-
-| | |
-|---|---|
-| **Persona** | UI Designer |
-| **Skill** | None — this phase *produces* a skill document (`STYLE_GUIDE.md`) used by later phases |
-| **Context** | BRD + Phase 7 output (screenshots of mock screens/wireframes) |
-| **Output** | Style guide document (becomes a skill for Phase 10+) |
-| **Gate** | Review for specificity — every rule must have exact values, not descriptions |
-
-**Prompt:**
-```
-PERSONA: You are a Professional UI Designer creating a style guide.
-
-CONTEXT:
-BRD: {BRD}
-Screenshots: {PHASE 7 — screenshots of generated mock screens/wireframes}
-
-TASK: Analyze the provided screenshots and extract a concrete style guide
-that an AI can follow consistently during code generation. The project
-uses Tailwind CSS and shadcn/ui. Every rule must include exact values:
-- Color palette (exact hex values for primary, secondary, semantic colors, mapped to Tailwind classes)
-- Typography scale (font families, exact sizes, weights, line heights)
-- Spacing system (base unit, exact scale values)
-- Component styling rules (buttons, inputs, cards, modals, tables — with Tailwind classes and shadcn variants)
+OUTPUT 2 — Style Guide (skills/STYLE_GUIDE.md):
+Using the design system summary, generate a concrete style guide with exact
+Tailwind CSS classes and shadcn/ui variants:
+- Color palette (exact hex values mapped to Tailwind classes)
+- Typography scale (font families, exact sizes, weights — with Tailwind classes)
+- Spacing system (base unit, exact scale — with Tailwind classes)
+- Component styling rules (buttons, inputs, cards, modals, tables — with
+  Tailwind classes and shadcn variants)
 - Animation/transition standards (exact durations, easing)
 - Dark mode rules (if applicable)
 - Accessibility requirements (contrast ratios, focus states, ARIA patterns)
@@ -458,15 +435,11 @@ uses Tailwind CSS and shadcn/ui. Every rule must include exact values:
 
 **Why screenshots matter:** AI extracts concrete values (exact colors, spacing proportions, typography choices) from actual visuals far more reliably than generating them from text descriptions. This eliminates the vagueness problem where style guides say "use consistent spacing" instead of "8px base unit, scale of 8/16/24/32/48."
 
-**Human Review Focus:** Is every rule specific enough to produce identical results across independently prompted pages? If a rule says "use a muted color" instead of "use `text-slate-500`", it's not specific enough. This is the most important review gate for frontend consistency.
-
-**Note:** The output of this phase becomes `STYLE_GUIDE.md` — a per-project skill document used in Phase 10 (Page Generation).
-
-**Human Review Focus:** Is the style guide specific enough that the AI can follow it consistently during page generation? Vague guidelines produce inconsistent pages.
+**Human Review Focus:** Does every page in the Page Manifest have a wireframe? Is every style guide rule specific enough to produce identical results across independently prompted pages? "Use a muted color" is too vague — "use `text-slate-500`" is correct. This is the most important review gate for frontend consistency.
 
 ---
 
-## PHASE 9 — Frontend API Modules
+## PHASE 8 — Frontend API Modules
 
 ⚠️ **Multi-source context required**
 
@@ -504,59 +477,53 @@ TASK: Using the backend Zod schemas as the single source of truth:
 
 ---
 
-## PHASE 10 — Page Generation
+## PHASE 9 — Page Generation
 
 ⚠️ **Multi-source context required — prompted one page at a time**
 
 | | |
 |---|---|
 | **Persona** | Frontend Engineer |
-| **Skill** | `STYLE_GUIDE.md` (from Phase 8) — ensures visual consistency across independently prompted pages |
-| **Context** | BRD (relevant module only) + Phase 7 output (relevant page design) + Phase 9 output (hooks, types, mock data) |
+| **Skill** | Style Guide section of `docs/ui-design.md` (from Phase 7) — ensures visual consistency across independently prompted pages |
+| **Context** | BRD (relevant module only) + `docs/ui-design.md` (wireframe + style guide) + Phase 8 output (hooks, types, mock data) |
 | **Output** | Page components, layout components |
-| **Gate** | Page renders correctly with mock data, matches design |
+| **Gate** | Page renders correctly with mock data, matches wireframe |
 
-Each page is prompted individually. The style guide skill is included in every page prompt to ensure consistency across pages that are generated in separate conversations.
+Each page is prompted individually. The style guide (embedded in `docs/ui-design.md`) is included in every page prompt to ensure consistency across pages generated in separate conversations.
 
 **Prompt (run per page):**
 ```
 PERSONA: You are a Senior Frontend Engineer.
 
-SKILL: Follow the style guide below for all styling decisions. The project
-uses Tailwind CSS and shadcn/ui for components.
-{STYLE_GUIDE.md}
-
 CONTEXT:
 BRD: {BRD — relevant module requirements only}
-Design: {PHASE 7 — relevant page screenshot/wireframe}
-Available Hooks: {PHASE 9 — hook signatures}
-Mock Data: {PHASE 9 — mock factories}
-Types: {PHASE 9 — inferred types}
+UI Design: {docs/ui-design.md — wireframe for this page AND the Style Guide section}
+Available Hooks: {PHASE 8 — hook signatures}
+Mock Data: {PHASE 8 — mock factories}
+Types: {PHASE 8 — inferred types}
 
 TASK: Build the page for {PAGE_NAME}:
-- Implement the layout matching the wireframe/design
-- Use Tailwind CSS for styling, following the style guide exactly
+- Implement the layout matching the wireframe in docs/ui-design.md
+- Use Tailwind CSS for styling, following the Style Guide section exactly
 - Use shadcn/ui components where applicable
 - Import and use the generated hooks for data fetching
 - Use mock data for development/preview
 - Implement all states: loading, empty, error, populated
 - Include form validation using the frontend Zod schemas
-- Implement responsive behavior per the style guide
+- Implement responsive behavior per the Style Guide
 ```
 
-**Human Review Focus:** Does the page match the design? Are Tailwind classes and shadcn components used consistently with the style guide? Do all states render correctly? Compare against previously generated pages for visual consistency.
-
-**Human Review Focus:** Does the page match the design? Do all states (loading, empty, error) render correctly? Is the style guide being followed consistently?
+**Human Review Focus:** Does the page match the wireframe? Are Tailwind classes and shadcn components used consistently with the style guide? Do all states render correctly? Compare against previously generated pages for visual consistency.
 
 ---
 
-## PHASE 11 — Frontend Testing
+## PHASE 10 — Frontend Testing
 
 | | |
 |---|---|
 | **Persona** | QA Engineer |
 | **Skill** | `TESTING_CONVENTIONS.md` — behavioral testing approach, component/hook test patterns |
-| **Context** | BRD (acceptance criteria) + Phase 10 output (pages) + Phase 9 output (mock data) |
+| **Context** | BRD (acceptance criteria) + Phase 9 output (pages) + Phase 8 output (mock data) |
 | **Output** | Component tests, hook tests, form validation tests |
 | **Gate** | All tests pass |
 
@@ -571,8 +538,8 @@ and assertion patterns. Test user-visible behavior, not implementation.
 
 CONTEXT:
 BRD: {BRD — relevant acceptance criteria}
-Page Component: {PHASE 10 — relevant page}
-Mock Data: {PHASE 9 — mock factories}
+Page Component: {PHASE 9 — relevant page}
+Mock Data: {PHASE 8 — mock factories}
 
 TASK: Create the following tests:
 - Component tests: does the user see the right content? Do interactions
@@ -588,7 +555,7 @@ TASK: Create the following tests:
 
 ---
 
-## PHASE 12 — Integration & E2E Testing
+## PHASE 11 — Integration & E2E Testing
 
 ⚠️ **Multi-source context required**
 
@@ -596,7 +563,7 @@ TASK: Create the following tests:
 |---|---|
 | **Persona** | QA Engineer |
 | **Skill** | `E2E_PATTERNS.md` — selector strategy, fixture structure, flow test patterns |
-| **Context** | BRD + Phase 3 output (route map) + Phase 7 output (user flows) |
+| **Context** | BRD + Phase 3 output (route map) + `docs/ui-design.md` (user flows) |
 | **Output** | E2E test suites |
 | **Gate** | All E2E flows pass against running backend |
 
@@ -610,7 +577,7 @@ and flow test organization.
 
 CONTEXT:
 BRD: {BRD}
-User Flows: {PHASE 7 — user flow diagrams}
+User Flows: {docs/ui-design.md — user flow diagrams section}
 API Routes: {PHASE 3 — route map}
 
 TASK: Create the following E2E tests:
@@ -625,7 +592,7 @@ TASK: Create the following E2E tests:
 
 ---
 
-## PHASE 13 — Code Review (Rolling)
+## PHASE 12 — Code Review (Rolling)
 
 ⚠️ **Multi-source context required**
 
@@ -643,9 +610,9 @@ TASK: Create the following E2E tests:
 |---|---|---|
 | After first backend module (Phase 4, first module) | Controller patterns, auth guards, error handling, Zod structure | Catches template-level issues before you generate more modules with the same patterns |
 | After backend track complete (Phases 4–6) | Cross-module consistency, migration correctness, query patterns | Catches N+1 queries, missing indexes, inconsistent error handling across modules |
-| After first frontend page (Phase 10, first page) | Component structure, style guide adherence, hook usage patterns | Same logic — catch pattern issues before generating more pages |
-| After frontend track complete (Phases 9–11) | Cross-page consistency, API contract alignment, state management | Catches drift between frontend types and backend Zod schemas |
-| Final sweep (after Phase 12) | Full security review, performance review, everything together | Final gate before documentation and deployment |
+| After first frontend page (Phase 9, first page) | Component structure, style guide adherence, hook usage patterns | Same logic — catch pattern issues before generating more pages |
+| After frontend track complete (Phases 8–10) | Cross-page consistency, API contract alignment, state management | Catches drift between frontend types and backend Zod schemas |
+| Final sweep (after Phase 11) | Full security review, performance review, everything together | Final gate before documentation and deployment |
 
 **Prompt:**
 ```
@@ -672,7 +639,7 @@ TASK: Review the code for:
 
 ---
 
-## PHASE 14 — Documentation
+## PHASE 13 — Documentation
 
 | | |
 |---|---|
@@ -708,13 +675,13 @@ TASK: Generate the following documentation:
 
 ---
 
-## PHASE 15 — Deployment Configuration
+## PHASE 14 — Deployment Configuration
 
 | | |
 |---|---|
 | **Persona** | DevOps Engineer |
 | **Skill** | `INFRA_STANDARD.md` — Dockerfile patterns, CI/CD template, env config conventions |
-| **Context** | BRD + Phase 3 output (architecture) + Phase 14 output (env docs) |
+| **Context** | BRD + Phase 3 output (architecture) + Phase 13 output (env docs) |
 | **Output** | Dockerfiles, CI/CD configs, environment templates |
 | **Gate** | Build and deploy succeeds in staging |
 
@@ -729,7 +696,7 @@ CI/CD pipeline structure, and environment configuration.
 CONTEXT:
 BRD: {BRD}
 Architecture: {PHASE 3 OUTPUT}
-Environment Docs: {PHASE 14 OUTPUT}
+Environment Docs: {PHASE 13 OUTPUT}
 
 TASK: Generate the following:
 - Dockerfile(s) for backend and frontend
@@ -753,16 +720,15 @@ TASK: Generate the following:
 | 3 | Architecture | Architect | `ARCHITECTURE_STANDARD` | BRD + Phase 2 | Review |
 | 4 | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 | ✅ VERIFY |
 | 5 | Backend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 4 | Tests pass |
-| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod (no index verification) |
-| 7 | UI/UX Design | UI Designer | — | BRD (Page Manifest) + Phase 3 + optional screenshots/rules | Review |
-| 8 | Style Guide | UI Designer | — (produces `STYLE_GUIDE`) | BRD + Phase 7 | Review |
-| 9 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4 Zod | ⚠️ Zod match |
-| 10 | Page Generation | Frontend Engineer | `STYLE_GUIDE` + `COMPONENT_PATTERNS` | BRD + Phase 7, 9 | ⚠️ Renders correctly |
-| 11 | Frontend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 9, 10 | Tests pass |
-| 12 | E2E Testing | QA Engineer | `E2E_PATTERNS` | BRD + Phase 3, 7 | ⚠️ All flows pass |
-| 13 | Code Review | Architect | `REVIEW_CHECKLIST` | BRD + Phase 3 + code | ⚠️ Issues resolved |
-| 14 | Documentation | Technical Writer | `DOC_TEMPLATES` | BRD + Phase 3, 4 | Docs match code |
-| 15 | Deployment Config | DevOps Engineer | `INFRA_STANDARD` | BRD + Phase 3, 14 | Deploy succeeds |
+| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod |
+| 7 | UI/UX Design & Style Guide | UI Designer | — (produces `docs/ui-design.md`) | BRD (Page Manifest) + Phase 3 + optional screenshots/rules | Review |
+| 8 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4 Zod | ⚠️ Zod match |
+| 9 | Page Generation | Frontend Engineer | `docs/ui-design.md` Style Guide section | BRD + Phase 7, 8 | ⚠️ Renders correctly |
+| 10 | Frontend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 8, 9 | Tests pass |
+| 11 | E2E Testing | QA Engineer | `E2E_PATTERNS` | BRD + Phase 3, 7 | ⚠️ All flows pass |
+| 12 | Code Review | Architect | `REVIEW_CHECKLIST` | BRD + Phase 3 + code | ⚠️ Issues resolved |
+| 13 | Documentation | Technical Writer | `DOC_TEMPLATES` | BRD + Phase 3, 4 | Docs match code |
+| 14 | Deployment Config | DevOps Engineer | `INFRA_STANDARD` | BRD + Phase 3, 13 | Deploy succeeds |
 
 ⚠️ = Multi-source context — assemble inputs from multiple phases before prompting.
 
@@ -773,19 +739,19 @@ TASK: Generate the following:
 ```
 Phase 3 complete
   ├── Backend Track: Phase 4 → 5 → 6
-  └── Design Track:  Phase 7 → 8
-                                 ↘
-         Both tracks complete → Phase 9 → 10 → 11 → 12 → 13 → 14 → 15
+  └── Design Track:  Phase 7
+                          ↘
+         Both tracks complete → Phase 8 → 9 → 10 → 11 → 12 → 13 → 14
 ```
 
 ---
 
 ## Iteration Strategy
 
-For large apps, don't generate all modules at once. Run Phases 4–11 per module:
+For large apps, don't generate all modules at once. Run Phases 4–10 per module:
 
 1. Generate backend module → test → migrate
 2. Generate frontend API module → pages → test
 3. Move to next module
-4. Run Phase 12 (E2E) once all modules are integrated
-5. Run Phases 13–15 as a final sweep
+4. Run Phase 11 (E2E) once all modules are integrated
+5. Run Phases 12–14 as a final sweep

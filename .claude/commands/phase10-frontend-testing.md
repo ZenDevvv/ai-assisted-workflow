@@ -6,8 +6,8 @@ Read `skills/TESTING_CONVENTIONS.md` if it exists — follow its conventions for
 
 Read these context files before proceeding:
 - BRD: `docs/brd.md` — focus on the acceptance criteria for: $ARGUMENTS
-- The page component(s) from Phase 10 for this page/module
-- The frontend API module from Phase 9 — mock data factories
+- The page component(s) from Phase 9 for this page/module
+- The frontend API module from Phase 8 — mock data factories
 
 Create tests for **$ARGUMENTS**:
 - Component tests: does the user see the right content? Do interactions (clicks, form submissions, navigation) produce the right outcomes?

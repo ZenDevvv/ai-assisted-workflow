@@ -26,14 +26,25 @@ If design rules are provided, treat them as hard constraints that override defau
 
 ---
 
-## Generate the following:
+## Output: `docs/ui-design.md`
 
-### 1. Design System Summary
-Extracted from screenshots (if provided) or sensible defaults:
-- Color palette with hex values
-- Typography scale
-- Spacing scale
-- Component style tokens (border radius, shadows, etc.)
+Save everything below into a single file. Downstream phases (pages, E2E, review) all reference this one file.
+
+### 1. Style Guide
+The code-ready style system. Every rule must include **exact values** — no vague descriptions. The project uses Tailwind CSS and shadcn/ui.
+
+Extracted from screenshots (if provided) or derived from design rules and sensible defaults:
+
+- **Color palette** — exact hex values for primary, secondary, accent, background, surface, text colors, mapped to Tailwind classes
+- **Typography scale** — font families, exact sizes, weights, line heights — with Tailwind classes
+- **Spacing system** — base unit, exact scale values — with Tailwind classes
+- **Component styling** — buttons, inputs, cards, modals, tables — with exact Tailwind classes and shadcn variants
+- **Border radius and shadows** — with exact Tailwind classes
+- **Animation/transition standards** — exact durations and easing
+- **Dark mode rules** — if applicable
+- **Accessibility** — contrast ratios, focus states, ARIA patterns
+
+Every rule must be specific enough to produce identical results across independently prompted pages. "Use a muted color" is too vague — "use `text-slate-500`" is correct.
 
 ### 2. Page Inventory
 Pull directly from the BRD's **Page Manifest** table. Do not invent pages — every page must trace back to a user story.
@@ -63,6 +74,8 @@ For each page: loading, empty, error, and populated states.
 
 ---
 
-Save the output to `docs/ui-design.md`.
-
-📋 REVIEW GATE: Does every page in the Page Manifest have a wireframe? Do extracted styles match the reference screenshots? Are the user flows complete? Are error/empty states accounted for?
+📋 REVIEW GATE:
+1. Does every page in the Page Manifest have a wireframe?
+2. Do extracted styles match the reference screenshots?
+3. Is every style guide rule specific enough to produce identical results across independently prompted pages?
+4. Are the user flows complete? Are error/empty states accounted for?

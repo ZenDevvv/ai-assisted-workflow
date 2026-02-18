@@ -1,6 +1,6 @@
 # AI-Assisted Fullstack Development Workflow
 
-A 15-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right persona, skill documents, and context — no manual copy-pasting.
+A 14-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right persona, skill documents, and context — no manual copy-pasting.
 
 ---
 
@@ -25,14 +25,13 @@ You review the output, make corrections, and move to the next phase.
 /phase5-backend-testing <MODULE_NAME> | all
 /phase6-migrations
 /phase7-ui-design <optional: screenshot paths and/or design rules>
-/phase8-style-guide
-/phase9-frontend-api <MODULE_NAME>
-/phase10-pages <PAGE_NAME>
-/phase11-frontend-testing <MODULE_OR_PAGE_NAME>
-/phase12-e2e
-/phase13-review <optional: what to review>
-/phase14-docs
-/phase15-deployment
+/phase8-frontend-api <MODULE_NAME>
+/phase9-pages <PAGE_NAME>
+/phase10-frontend-testing <MODULE_OR_PAGE_NAME>
+/phase11-e2e
+/phase12-review <optional: what to review>
+/phase13-docs
+/phase14-deployment
 
 ```
 
@@ -42,7 +41,7 @@ You review the output, make corrections, and move to the next phase.
 
 ```
 ├── CLAUDE.md                       # Auto-loaded by Claude Code — project context
-├── .claude/commands/               # Slash commands for all 15 phases
+├── .claude/commands/               # Slash commands for all 14 phases
 │   ├── phase1-brd.md
 │   ├── phase2-planning.md
 │   ├── phase3-architecture.md
@@ -50,14 +49,13 @@ You review the output, make corrections, and move to the next phase.
 │   ├── phase5-backend-testing.md
 │   ├── phase6-migrations.md
 │   ├── phase7-ui-design.md
-│   ├── phase8-style-guide.md
-│   ├── phase9-frontend-api.md
-│   ├── phase10-pages.md
-│   ├── phase11-frontend-testing.md
-│   ├── phase12-e2e.md
-│   ├── phase13-review.md
-│   ├── phase14-docs.md
-│   └── phase15-deployment.md
+│   ├── phase8-frontend-api.md
+│   ├── phase9-pages.md
+│   ├── phase10-frontend-testing.md
+│   ├── phase11-e2e.md
+│   ├── phase12-review.md
+│   ├── phase13-docs.md
+│   └── phase14-deployment.md
 │
 ├── personas/                       # AI persona files (9 roles)
 │   ├── business-analyst.md
@@ -74,14 +72,14 @@ You review the output, make corrections, and move to the next phase.
 │   ├── BRD_FORMAT.md               # BRD structure, module IDs, GWT criteria
 │   ├── MODULE_TEMPLATE.md          # Backend file structure, Zod, controller patterns
 │   ├── API_STANDARD.md             # Frontend hooks, service layer, Zod copy rules
-│   ├── STYLE_GUIDE.md              # (created per-project in Phase 8)
+│   ├── STYLE_GUIDE.md              # (created per-project in Phase 7)
 │   └── ...                         # More skills added as you refine conventions
 │
 ├── docs/                           # Project artifacts (created as you go)
 │   ├── brd.md                      # Phase 1 output
 │   ├── project-plan.md             # Phase 2 output
 │   ├── architecture.md             # Phase 3 output
-│   └── ui-design.md                # Phase 7 output
+│   └── ui-design.md                # Phase 7 output (wireframes + style guide combined)
 │
 └── AI-Assisted Fullstack Development Workflow.md  # Full playbook reference
 ```
@@ -105,7 +103,7 @@ You review the output, make corrections, and move to the next phase.
 
 ---
 
-## The 15 Phases
+## The 14 Phases
 
 ### Phase 1 — Business Requirements
 
@@ -115,7 +113,7 @@ You review the output, make corrections, and move to the next phase.
 
 Persona: Business Analyst | Skill: `BRD_FORMAT` | Output: `docs/brd.md`
 
-Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, error states, **user stories**, and a **Page Manifest**. User stories map every user-facing interaction to a page — this becomes the source of truth for what Phase 7 designs and Phase 10 builds.
+Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, error states, **user stories**, and a **Page Manifest**. User stories map every user-facing interaction to a page — this becomes the source of truth for what Phase 7 designs and Phase 9 builds.
 
 **Gate:** ⚠️ VERIFY — this document drives everything. Invest the most review time here.
 
@@ -161,7 +159,7 @@ Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (mod
 
 Generates Zod schemas, routes, controllers, middleware. Pass a module name for one module, or `all` to generate every module in dependency order.
 
-**Gate:** ⚠️ VERIFY — Zod schemas become the frontend's source of truth. After the **first** module, run `/phase13-review` before generating more.
+**Gate:** ⚠️ VERIFY — Zod schemas become the frontend's source of truth. After the **first** module, run `/phase12-review` before generating more.
 
 ---
 
@@ -195,7 +193,7 @@ Auto-detects database type. **SQL:** generates migration scripts, rollback scrip
 
 ---
 
-### Phase 7 — UI/UX Design
+### Phase 7 — UI/UX Design & Style Guide
 
 ```
 /phase7-ui-design <optional: screenshot paths and/or design rules>
@@ -206,35 +204,21 @@ Auto-detects database type. **SQL:** generates migration scripts, rollback scrip
 - `/phase7-ui-design docs/screenshots/reference.png mobile first, dark mode default`
 - `/phase7-ui-design minimal sidebar, dark mode default`
 
-Persona: UI Designer | Skill: — | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md` | Output: `docs/ui-design.md`
+Persona: UI Designer | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md` | Output: `docs/ui-design.md`
 
-Generates design system summary, wireframes, user flows, component inventory, responsive behavior, and state designs. If reference screenshots are provided, extracts colors, typography, spacing, and component patterns from them. Custom design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
+Generates everything in a single file: the Style Guide (exact Tailwind classes, shadcn variants, hex colors), wireframes, user flows, component inventory, responsive behavior, and state designs. If reference screenshots are provided, extracts colors, typography, spacing, and component patterns from them — visual style only, never features. Custom design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
 
-**Gate:** Does every page in the Page Manifest have a wireframe? Do extracted styles match the reference screenshots?
-
----
-
-### Phase 8 — Style Guide
-
-```
-/phase8-style-guide
-```
-
-Persona: UI Designer | Skill: — | Reads: `docs/brd.md`, `docs/ui-design.md` | Output: `skills/STYLE_GUIDE.md`
-
-Extracts a concrete style guide with exact values (hex colors, Tailwind classes, spacing units) from the wireframes. The output becomes a skill document used by Phase 10.
-
-**Gate:** Is every rule specific enough to produce identical results across independently prompted pages? "Use a muted color" is too vague — "use `text-slate-500`" is correct.
+**Gate:** Does every page in the Page Manifest have a wireframe? Is every style guide rule specific enough to produce identical results across independently prompted pages?
 
 ---
 
-### Phase 9 — Frontend API Modules
+### Phase 8 — Frontend API Modules
 
 ```
-/phase9-frontend-api <MODULE_NAME>
+/phase8-frontend-api <MODULE_NAME>
 ```
 
-**Example:** `/phase9-frontend-api AUTH`
+**Example:** `/phase8-frontend-api AUTH`
 
 Persona: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4 Zod schemas, `docs/architecture.md`
 
@@ -244,31 +228,31 @@ Copies Zod schemas from backend, generates TypeScript types, endpoint configs, s
 
 ---
 
-### Phase 10 — Page Generation
+### Phase 9 — Page Generation
 
 ```
-/phase10-pages <PAGE_NAME>
+/phase9-pages <PAGE_NAME>
 ```
 
-**Example:** `/phase10-pages DashboardPage` or `/phase10-pages LoginPage`
+**Example:** `/phase9-pages DashboardPage` or `/phase9-pages LoginPage`
 
-Persona: Frontend Engineer | Skill: `STYLE_GUIDE` | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (page wireframe), Phase 9 hooks/types
+Persona: Frontend Engineer | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (wireframe + style guide), Phase 8 hooks/types
 
 Builds one page at a time using Tailwind + shadcn/ui, following the style guide exactly. Implements all states: loading, empty, error, populated.
 
-**Gate:** Does the page match the design? After the **first** page, run `/phase13-review` before generating more.
+**Gate:** Does the page match the design? After the **first** page, run `/phase12-review` before generating more.
 
 ---
 
-### Phase 11 — Frontend Testing
+### Phase 10 — Frontend Testing
 
 ```
-/phase11-frontend-testing <MODULE_OR_PAGE_NAME>
+/phase10-frontend-testing <MODULE_OR_PAGE_NAME>
 ```
 
-**Example:** `/phase11-frontend-testing DashboardPage`
+**Example:** `/phase10-frontend-testing DashboardPage`
 
-Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 10 page, Phase 9 mock data
+Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 9 page, Phase 8 mock data
 
 Generates behavioral component tests, hook tests, form validation tests, and accessibility tests.
 
@@ -276,10 +260,10 @@ Generates behavioral component tests, hook tests, form validation tests, and acc
 
 ---
 
-### Phase 12 — Integration & E2E Testing
+### Phase 11 — Integration & E2E Testing
 
 ```
-/phase12-e2e
+/phase11-e2e
 ```
 
 Persona: QA Engineer | Skill: `E2E_PATTERNS` | Reads: `docs/brd.md`, `docs/architecture.md`, `docs/ui-design.md`
@@ -290,18 +274,18 @@ Generates E2E test suites covering user flows, happy paths, error paths, cross-m
 
 ---
 
-### Phase 13 — Code Review (Rolling)
+### Phase 12 — Code Review (Rolling)
 
 ```
-/phase13-review <optional: what to review>
+/phase12-review <optional: what to review>
 ```
 
 **Examples:**
 
-- `/phase13-review first backend module AUTH`
-- `/phase13-review full backend track`
-- `/phase13-review first frontend page DashboardPage`
-- `/phase13-review` (auto-detects checkpoint based on progress)
+- `/phase12-review first backend module AUTH`
+- `/phase12-review full backend track`
+- `/phase12-review first frontend page DashboardPage`
+- `/phase12-review` (auto-detects checkpoint based on progress)
 
 Persona: Software Architect | Skill: `REVIEW_CHECKLIST` | Reads: `docs/brd.md`, `docs/architecture.md`, relevant code
 
@@ -311,10 +295,10 @@ Reviews code for security, performance, consistency, missing pieces, and API con
 
 ---
 
-### Phase 14 — Documentation
+### Phase 13 — Documentation
 
 ```
-/phase14-docs
+/phase13-docs
 ```
 
 Persona: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 Zod schemas
@@ -325,13 +309,13 @@ Generates README, API docs, environment variable docs, onboarding guide, and arc
 
 ---
 
-### Phase 15 — Deployment Configuration
+### Phase 14 — Deployment Configuration
 
 ```
-/phase15-deployment
+/phase14-deployment
 ```
 
-Persona: DevOps Engineer | Skill: `INFRA_STANDARD` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 14 docs
+Persona: DevOps Engineer | Skill: `INFRA_STANDARD` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 13 docs
 
 Generates Dockerfiles, Docker Compose, CI/CD pipeline, env templates, health checks, and production deployment checklist.
 
@@ -346,9 +330,9 @@ Phase 1 — BRD (VERIFY)
   └── Phase 2 — Planning
         └── Phase 3 — Architecture
               ├── Backend Track:  Phase 4 → 5 → 6    (can run in parallel)
-              └── Design Track:   Phase 7 → 8         (can run in parallel)
+              └── Design Track:   Phase 7              (can run in parallel)
                                         ↘
-              Both tracks complete → Phase 9 → 10 → 11 → 12 → 13 → 14 → 15
+              Both tracks complete → Phase 8 → 9 → 10 → 11 → 12 → 13 → 14
 ```
 
 After Phase 3, the backend track and design track can run in parallel (two separate Claude Code sessions).
@@ -357,15 +341,15 @@ After Phase 3, the backend track and design track can run in parallel (two separ
 
 ## Code Review Checkpoints
 
-Run `/phase13-review` at these points — don't wait until the end:
+Run `/phase12-review` at these points — don't wait until the end:
 
 | When                               | Why                                                       |
 | ---------------------------------- | --------------------------------------------------------- |
 | After first backend module         | Catch pattern-level issues before generating more modules |
 | After backend track (Phases 4-6)   | Cross-module consistency, migration correctness           |
 | After first frontend page          | Catch UI pattern issues before generating more pages      |
-| After frontend track (Phases 9-11) | Cross-page consistency, API contract alignment            |
-| After E2E (Phase 12)               | Final security + performance sweep                        |
+| After frontend track (Phases 8-10) | Cross-page consistency, API contract alignment            |
+| After E2E (Phase 11)               | Final security + performance sweep                        |
 
 ---
 
@@ -377,15 +361,15 @@ Skills are reusable reference documents encoding your conventions. They survive 
 | -------------------------- | ------------------------------ | -------------- |
 | `BRD_FORMAT.md`            | ✅ Ready                       | Phase 1        |
 | `MODULE_TEMPLATE.md`       | ✅ Ready                       | Phase 4        |
-| `API_STANDARD.md`          | ✅ Ready                       | Phase 9        |
-| `ARCHITECTURE_STANDARD.md` | Created by Phase 3             | Phase 3, 4, 13 |
-| `TESTING_CONVENTIONS.md`   | Created by Phase 5             | Phase 5, 11    |
-| `STYLE_GUIDE.md`           | Created per-project by Phase 8 | Phase 10       |
+| `API_STANDARD.md`          | ✅ Ready                       | Phase 8        |
+| `ARCHITECTURE_STANDARD.md` | Created by Phase 3             | Phase 3, 4, 12 |
+| `TESTING_CONVENTIONS.md`   | Created by Phase 5             | Phase 5, 10    |
+| Style Guide (in `ui-design.md`) | Created per-project by Phase 7 | Phase 9     |
 | `MIGRATION_TEMPLATE.md`    | Add when ready                 | Phase 6        |
-| `E2E_PATTERNS.md`          | Add when ready                 | Phase 12       |
-| `REVIEW_CHECKLIST.md`      | Add when ready                 | Phase 13       |
-| `DOC_TEMPLATES.md`         | Add when ready                 | Phase 14       |
-| `INFRA_STANDARD.md`        | Add when ready                 | Phase 15       |
+| `E2E_PATTERNS.md`          | Add when ready                 | Phase 11       |
+| `REVIEW_CHECKLIST.md`      | Add when ready                 | Phase 12       |
+| `DOC_TEMPLATES.md`         | Add when ready                 | Phase 13       |
+| `INFRA_STANDARD.md`        | Add when ready                 | Phase 14       |
 
 Skills you don't have yet won't block you — the phase commands handle missing skills gracefully. After your first project, extract patterns from what worked into new skill docs.
 
