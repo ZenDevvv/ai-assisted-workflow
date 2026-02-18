@@ -1,0 +1,439 @@
+# =============================================================================
+# AI-Assisted Fullstack Development Workflow — Global Settings
+# =============================================================================
+# Orchestrator-wide configuration for use with VSCode AI extensions
+# (Claude Code, GitHub Copilot/Codex, etc.).
+#
+# EXTENSION MODE — What this means:
+#   The orchestrator is a PROMPT ASSEMBLER, not an API caller.
+#   It reads phases.yaml + dependencies.yaml, loads the right persona/skill/
+#   context files, assembles a ready-to-use prompt, and displays it.
+#   YOU paste that prompt into your VSCode AI extension. The extension sends
+#   it to the AI, you review the response, save the output, and confirm the
+#   gate. The orchestrator tracks state and prepares the next prompt.
+#
+#   This means the following are NOT configured here:
+#     ✗ AI model selection     — your extension/subscription controls this
+#     ✗ API keys or retries    — your extension handles the API layer
+#     ✗ Token enforcement      — the extension manages its own context window
+#     ✗ Automated test running — you run tests manually in your terminal
+#
+# Override precedence (highest wins):
+#   1. CLI flags       (--project-dir, --output-dir, etc.)
+#   2. Per-project     ({project_dir}/.phasecraft/settings.yaml)
+#   3. This file       (global defaults)
+# =============================================================================
+
+
+# =============================================================================
+# Project Paths
+# =============================================================================
+# Where the orchestrator looks for inputs, stores outputs, and finds
+# framework files (personas, skills, templates).
+# All paths support {variables} resolved at runtime.
+# =============================================================================
+paths:
+
+  # Root of the framework — personas, skills, templates, config
+  framework_dir: "."
+
+  # Root of the target project being built
+  # Default: current working directory when orchestrator is invoked
+  project_dir: "{cwd}"
+
+  # Where all phase outputs are stored
+  outputs_dir: "{project_dir}/outputs"
+
+  # BRD location — produced by Phase 1, consumed by all subsequent phases
+  brd_path: "{project_dir}/brd.md"
+
+  # Decision log — append-only file tracking human corrections per project
+  decision_log: "{project_dir}/decision-log.md"
+
+  # Cross-project skills (shared and refined across all projects)
+  cross_project_skills_dir: "{framework_dir}/skills/cross-project"
+
+  # Per-project skills (e.g., STYLE_GUIDE.md produced fresh each project)
+  per_project_skills_dir: "{project_dir}/skills"
+
+  # Persona files
+  personas_dir: "{framework_dir}/personas"
+
+  # Phase task templates
+  templates_dir: "{framework_dir}/templates"
+
+  # Phase output directory naming — zero-padded phase ID
+  # e.g., Phase 4 → outputs/phase-04/
+  phase_output_pattern: "{outputs_dir}/phase-{phase_id:02d}"
+
+
+# =============================================================================
+# Prompt Composition Guidelines
+# =============================================================================
+# Advisory guidance for assembling prompts within a VSCode extension's
+# context window. The orchestrator cannot enforce these limits — the
+# extension manages its own context window.
+#
+# Use these guidelines to decide what to trim when a prompt feels too large.
+# Claude Code and Copilot both handle large contexts well, but very large
+# prompts (full BRD + large skill doc + long prior phase output) can push
+# the model to truncate responses or lose focus on the task.
+# =============================================================================
+prompt_composition:
+
+  # Recommended maximum total prompt size (persona + skill + context + task)
+  # This is a guideline, not an enforced limit. If your BRD is large and
+  # your skill doc is detailed, you may exceed this — that is acceptable.
+  # Trim lower-priority sources first (see priority order below).
+  recommended_max_chars: 80000
+
+  # When you need to trim to fit, prioritize sources in this order.
+  # Keep priority 1 sources in full; trim priority 4 sources first.
+  context_priority:
+    1: "brd"              # BRD is the anchor — never trim if avoidable
+    2: "error_standards"  # Error standards are referenced by most phases
+    2: "immediate_prior"  # Output from the directly preceding phase
+    3: "other_sources"    # Other referenced phase outputs
+    4: "erd"              # Diagrams — can be summarized or omitted if tight
+
+  # Target proportions for each prompt section (rough guidance only)
+  # These help you balance how much space each component takes.
+  section_guidance:
+    persona:       "~5%  — persona files are intentionally concise"
+    skill:         "~15% — skill docs define how to execute the task"
+    context:       "~65% — BRD + prior outputs — the substance of the prompt"
+    task_template: "~5%  — specific task instructions for this phase"
+    response_room: "~10% — leave headroom for the model's response"
+
+
+# =============================================================================
+# BRD Slicing
+# =============================================================================
+# Controls how the orchestrator parses and extracts module-specific sections
+# from the BRD for per-module phases (4, 5, 9, 10, 11).
+# The orchestrator reads the BRD file and extracts only the relevant module
+# section, then assembles it into the prompt context.
+# =============================================================================
+brd_slicing:
+
+  # Regex pattern to identify module headings
+  # Matches: ### 4.1 AUTH — Authentication & Authorization
+  # Captures: (section_number) (MODULE_ID) (Module Name)
+  module_heading_pattern: "^###\\s+(\\d+\\.\\d+)\\s+([A-Z][A-Z0-9_]*)\\s+—\\s+(.+)$"
+
+  # Regex pattern to identify individual requirement headings
+  # Matches: ##### AUTH-001 — User Registration
+  # Captures: (REQ_ID) (Requirement Title)
+  requirement_heading_pattern: "^#####\\s+([A-Z][A-Z0-9_]*-\\d{3})\\s+—\\s+(.+)$"
+
+  # Sections always included in a module slice (in addition to the module itself)
+  # These provide cross-cutting context needed by every module prompt
+  always_include_sections:
+    - "1. Overview"                    # Project context
+    - "3. User Roles"                  # Auth context relevant to all modules
+    - "5. Non-Functional Requirements" # Global performance/security constraints
+
+  # Maximum heading depth to include in a module slice
+  # H3 = module heading, H4 = subsections, H5 = requirements
+  max_heading_depth: 5
+
+
+# =============================================================================
+# Gate Configuration
+# =============================================================================
+# Gates are the human review checkpoints between phases. In extension mode,
+# all gates are manual — YOU review, approve, and confirm before the
+# orchestrator prepares the next prompt.
+#
+# The orchestrator uses these settings to:
+#   - Show the right review prompt and checklist after each phase
+#   - Know when to prompt for a decision log entry
+#   - Determine whether a partial approval is acceptable
+# =============================================================================
+gates:
+
+  types:
+
+    # VERIFY — strictest gate. Used for BRD (Phase 1) and backend modules (Phase 4).
+    # The output becomes the foundation for everything downstream.
+    # Review more carefully here than anywhere else.
+    verify:
+      prompt_message: >
+        ⚠️  VERIFICATION REQUIRED — This output is a foundation for all
+        downstream phases. Review carefully before confirming. Check every
+        field, every relationship, every edge case. Mistakes here propagate
+        everywhere.
+      allow_partial: false   # Review the entire output — not just parts
+      log_decision: true     # Always write a decision log entry after verify gates
+
+    # REVIEW — standard gate. Used for most phases.
+    # Review and approve, or request changes before proceeding.
+    review:
+      prompt_message: >
+        📋 Review the output above. Approve to proceed, or paste corrections
+        back into the extension to regenerate. If you made changes, add a
+        decision log entry noting what and why.
+      allow_partial: true    # Can approve most of the output and flag specific sections
+      log_decision: false    # Only write a decision log entry if you made changes
+
+    # TESTS_PASS — used for Phase 5 (backend testing), Phase 11 (frontend testing),
+    # Phase 12 (E2E testing). You run the tests manually in your terminal.
+    # The orchestrator shows you the review checklist; you confirm the results.
+    tests_pass:
+      prompt_message: >
+        🧪 Run the tests in your terminal. Once they pass, review the test
+        quality using the checklist below — passing tests can still be
+        poorly written. Confirm when both the tests pass AND the quality
+        looks good.
+      # NOTE: The orchestrator does NOT run tests automatically.
+      # You run them manually: npm test / npx vitest / npx playwright test
+      manual_run: true
+      allow_partial: false   # All tests must pass, not just some
+
+  # Decision log prompting behavior
+  decision_log:
+    # Show a decision log prompt whenever a gate results in changes
+    prompt_after_changes: true
+    # Template for structuring decision log entries
+    entry_template: "templates/decision-log-entry.md"
+
+
+# =============================================================================
+# Module Ordering
+# =============================================================================
+# Controls how the orchestrator determines the build order for per-module
+# phases (4, 5, 9, 10, 11). Independent modules (no foreign key dependencies
+# on other project modules) are built first to minimize rework.
+# =============================================================================
+module_ordering:
+
+  # Strategy: start with models that have no FK dependencies on other modules
+  strategy: "independent_first"
+
+  # Patterns the orchestrator looks for in Phase 3 data models to detect
+  # cross-module foreign key references
+  dependency_detection:
+    foreign_key_patterns:
+      - "\\w+Id\\s+String\\s+@db\\.ObjectId"   # Prisma ObjectId FK field
+      - "@relation\\(fields:\\s*\\[\\w+\\]"      # Prisma @relation directive
+
+  # When two modules have equal dependency depth, sort alphabetically
+  tiebreaker: "alphabetical"
+
+  # You can override the computed order manually
+  # Set this in your per-project settings or pass via CLI:
+  # --module-order "auth,users,projects,courses"
+  allow_manual_override: true
+
+
+# =============================================================================
+# Iteration
+# =============================================================================
+# Controls how the orchestrator steps through per-module and per-page phases.
+# In extension mode, "pause between" means the orchestrator waits for your
+# confirmation before preparing the next prompt — it does not automate anything.
+# =============================================================================
+iteration:
+
+  # Per-module phases (4, 5, 9) — one prompt per module
+  per_module:
+    # Orchestrator waits for your gate confirmation before preparing
+    # the next module's prompt
+    pause_between: true
+    # Show a progress summary (e.g., "Module 2/5 complete: auth, users")
+    show_progress: true
+    # Allow skipping a module that was completed manually outside the workflow
+    allow_skip: true
+
+  # Per-page phases (10, 11) — one prompt per page
+  per_page:
+    pause_between: true
+    show_progress: true
+    allow_skip: true
+    # Source for the list of pages to iterate over
+    page_source: "phase_7_page_inventory"
+
+  # Checkpoint phases (Phase 13 — Code Review)
+  checkpoint:
+    # When a checkpoint condition is met (e.g., first backend module done),
+    # the orchestrator notifies you and prepares the code review prompt.
+    # You decide when to actually run it.
+    notify_on_trigger: true
+    # Recommended: do not defer code review checkpoints.
+    # Deferring lets pattern-level bugs multiply before they are caught.
+    allow_defer: false
+
+
+# =============================================================================
+# Parallel Tracks (Session Workflow)
+# =============================================================================
+# After Phase 3, the backend track (4→5→6) and design track (7→8) can be
+# worked in PARALLEL SESSIONS — you open two separate Claude Code or Copilot
+# sessions and work both tracks simultaneously.
+#
+# The orchestrator tracks completion state for each track and only unlocks
+# the frontend track (Phase 9+) once both are done.
+# =============================================================================
+parallel:
+
+  # Parallel track workflow is supported — you work both tracks in separate
+  # VSCode extension sessions. The orchestrator does not manage concurrency
+  # programmatically; it tracks which tracks are complete.
+  enabled: true
+
+  # When both tracks are available, which to suggest starting first
+  # (the other track can be worked in a second session simultaneously)
+  suggested_first_track: "backend"
+
+  # Show a visual summary of track status when the orchestrator is invoked
+  show_track_status: true
+
+
+# =============================================================================
+# Output Management
+# =============================================================================
+# Controls how the orchestrator stores, names, and validates phase outputs.
+# The orchestrator saves assembled prompts and phase outputs to disk so
+# they can be referenced by future phases.
+# =============================================================================
+output:
+
+  # Directory naming conventions
+  phase_dir_format: "phase-{phase_id:02d}"          # e.g., phase-04
+  module_dir_format: "{module_name_lowercase}"       # e.g., auth, users
+  page_dir_format: "{page_name_kebab_case}"          # e.g., dashboard-page
+  checkpoint_dir_format: "{checkpoint_name}"         # e.g., after_first_backend_module
+
+  # File naming conventions
+  file_naming:
+    documents: "kebab-case"   # project-plan.md, route-map.md, error-standards.md
+    code: "match-skill"       # Follow naming conventions defined in the skill doc
+    diagrams: "kebab-case"    # erd.mermaid, user-flows.mermaid
+
+  # Versioning — keep previous outputs when a phase is re-run
+  versioning:
+    keep_previous: true
+    max_versions: 5           # 0 = keep all versions
+    version_suffix: "v{n}"   # brd.v1.md, brd.v2.md, etc.
+
+  # Validation — after the user saves output, the orchestrator checks:
+  validation:
+    check_outputs_exist: true        # Were expected output files actually created?
+    check_heading_structure: true    # Do markdown outputs have required headings?
+    min_file_size_bytes: 100         # Warn if a file looks suspiciously empty
+
+
+# =============================================================================
+# Prompt Assembly
+# =============================================================================
+# Controls how the orchestrator builds and formats the assembled prompt
+# before displaying it to you for pasting into your extension.
+# =============================================================================
+prompt:
+
+  # Base template that wraps all four components (PERSONA/SKILL/CONTEXT/TASK)
+  template: "templates/prompt.md"
+
+  # Section delimiters — help the AI distinguish instruction types
+  delimiters:
+    persona_start:  "<!-- PERSONA -->"
+    persona_end:    "<!-- /PERSONA -->"
+    skill_start:    "<!-- SKILL -->"
+    skill_end:      "<!-- /SKILL -->"
+    context_start:  "<!-- CONTEXT -->"
+    context_end:    "<!-- /CONTEXT -->"
+    task_start:     "<!-- TASK -->"
+    task_end:       "<!-- /TASK -->"
+
+  # Include phase number and name at the top of the assembled prompt
+  # Helps orient the AI (and you) when reading the assembled output
+  include_phase_metadata: true
+
+  # Include gate review checklist at the bottom of the assembled prompt
+  # Reminds the AI what the human reviewer will be checking
+  include_gate_hints: true
+
+  # Save the assembled prompt to disk before displaying it
+  # Useful for reviewing what was sent and debugging context issues
+  save_assembled_prompt: true
+  assembled_prompt_path: "{outputs_dir}/phase-{phase_id:02d}/_assembled-prompt.md"
+
+
+# =============================================================================
+# Decision Log
+# =============================================================================
+# Running record of human corrections and overrides. Feed this back into
+# your skill documents over time — recurring corrections are the signal
+# that a skill document needs a new rule.
+# =============================================================================
+decision_log:
+
+  path: "{project_dir}/decision-log.md"
+
+  # Prompt you to write a decision log entry after any gate where you
+  # made corrections to the AI's output
+  prompt_on_changes: true
+
+  # Automatically add metadata to each entry
+  auto_metadata:
+    timestamp: true    # When the change was made
+    phase: true        # Which phase (number + name)
+    module: true       # Which module, if applicable
+    gate_type: true    # verify / review / tests_pass
+
+  # After the project is complete, show a summary of recurring patterns
+  # from the decision log — these are candidates for skill document updates
+  post_project_summary: true
+
+
+# =============================================================================
+# Skill Management
+# =============================================================================
+# Controls how the orchestrator loads, saves, and versions skill documents.
+# =============================================================================
+skills:
+
+  # Search paths for skill files (searched in order — first match wins)
+  search_paths:
+    - "{framework_dir}/skills/cross-project"
+    - "{project_dir}/skills"
+
+  # When a phase produces a skill (e.g., Phase 3 → ARCHITECTURE_STANDARD,
+  # Phase 5 → TESTING_CONVENTIONS, Phase 8 → STYLE_GUIDE)
+  production:
+    # Prompt you to review the produced skill before it is saved
+    review_before_save: true
+    cross_project_output: "{framework_dir}/skills/cross-project"
+    per_project_output: "{project_dir}/skills"
+
+  versioning:
+    # Track which project last updated each cross-project skill
+    track_last_modified: true
+    # Back up the existing skill file before overwriting
+    backup_before_overwrite: true
+
+
+# =============================================================================
+# Logging & Diagnostics
+# =============================================================================
+# Orchestrator-level logging. Tracks what the orchestrator did — which files
+# it loaded, which prompt it assembled, which gate was confirmed.
+# Does NOT track AI model usage (the extension handles that).
+# =============================================================================
+logging:
+
+  # Log level: "debug" | "info" | "warn" | "error"
+  level: "info"
+
+  # Where to write orchestrator activity logs
+  log_file: "{project_dir}/.phasecraft/orchestrator.log"
+
+  # Log the full assembled prompt to disk for each phase
+  # Useful for debugging when the AI output seems off — review what was sent
+  log_prompts: true
+
+  # Log which files were loaded for each phase (persona, skills, context sources)
+  log_file_loads: true
+
+  # Log phase start/end timestamps (wall clock time, not AI response time)
+  log_phase_timestamps: true

@@ -1,0 +1,776 @@
+# =============================================================================
+# AI-Assisted Fullstack Development Workflow — Phase Registry
+# =============================================================================
+# This file is the backbone of the orchestrator. It defines every phase's
+# persona, skill, context sources, task template, iteration mode, and gate.
+#
+# The orchestrator reads this file to auto-assemble prompts:
+#   1. Load the persona from /personas/{persona_file}
+#   2. Load skill doc(s) from /skills/{skill_path}
+#   3. Resolve context from prior phase outputs + BRD
+#   4. Inject into the task template from /templates/phases/{template}
+#   5. Send to AI, then enforce the gate before storing output
+# =============================================================================
+
+# ---------------------
+# Global Defaults
+# ---------------------
+defaults:
+  # model is NOT set here — the AI model is determined by your VSCode extension
+  # (Claude Code, GitHub Copilot, etc.) and cannot be overridden by the orchestrator.
+  brd_path: "{project_dir}/brd.md"
+  outputs_dir: "{project_dir}/outputs"
+  prompt_template: "templates/prompt.md"
+
+# ---------------------
+# Phase Definitions
+# ---------------------
+phases:
+
+  # ===========================================================================
+  # PHASE 1 — Business Requirements
+  # ===========================================================================
+  - id: 1
+    name: "Business Requirements"
+    description: "Generate the Business Requirements Document from app concept and user stories."
+
+    persona:
+      role: "Business Analyst"
+      file: "personas/business-analyst.md"
+
+    skill:
+      - path: "skills/cross-project/BRD_FORMAT.md"
+        description: >
+          Strict heading conventions, module IDs, requirement IDs,
+          Given/When/Then acceptance criteria, error state format.
+          Ensures the BRD is parseable by the orchestrator for
+          downstream module slicing.
+
+    context:
+      brd_mode: "none"  # BRD doesn't exist yet
+      sources: []        # User provides app concept + user stories as raw input
+
+    task_template: "templates/phases/phase-01-requirements.md"
+
+    iteration:
+      mode: "single"  # One prompt, one output
+
+    gate:
+      type: "verify"   # MANUAL VERIFICATION — this is the anchor for everything
+      instructions: >
+        Are all features captured? Are acceptance criteria testable?
+        Are edge cases realistic? Do all modules have IDs? Do all
+        requirements have unique IDs? Are error states documented?
+        This document drives everything — invest the most review time here.
+
+    outputs:
+      - key: "brd"
+        path: "{outputs_dir}/phase-01/brd.md"
+        description: "Business Requirements Document"
+
+  # ===========================================================================
+  # PHASE 2 — Project Planning & Estimation
+  # ===========================================================================
+  - id: 2
+    name: "Project Planning & Estimation"
+    description: "Generate project plan, estimates, dependency map, and risk register."
+
+    persona:
+      role: "Project Manager"
+      file: "personas/project-manager.md"
+
+    skill: null  # Persona flexibility preferred
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+
+    task_template: "templates/phases/phase-02-planning.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "review"
+      instructions: >
+        Are estimates realistic for your team/skill level?
+        Is the build order logical? Does the dependency map make sense?
+
+    outputs:
+      - key: "project_plan"
+        path: "{outputs_dir}/phase-02/project-plan.md"
+        description: "Project plan with estimates and dependency map"
+
+  # ===========================================================================
+  # PHASE 3 — Architecture & Model Design
+  # ===========================================================================
+  - id: 3
+    name: "Architecture & Model Design"
+    description: "Design data models, ERD, API route map, auth strategy, and error standards."
+
+    persona:
+      role: "Software Architect"
+      file: "personas/software-architect.md"
+
+    skill:
+      - path: "skills/cross-project/ARCHITECTURE_STANDARD.md"
+        description: "Naming conventions, error response shape, auth patterns, API route conventions"
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 2
+          key: "project_plan"
+
+    task_template: "templates/phases/phase-03-architecture.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "review"
+      instructions: >
+        Do model relationships match the BRD? Is the API surface complete —
+        every feature has routes? Are there missing auth guards?
+        Is the error standard consistent?
+
+    # Phase 3 may PRODUCE a skill if one doesn't exist yet
+    produces_skill:
+      condition: "if_not_exists"
+      path: "skills/cross-project/ARCHITECTURE_STANDARD.md"
+
+    outputs:
+      - key: "data_models"
+        path: "{outputs_dir}/phase-03/data-models.md"
+        description: "Data models with field types, relationships, constraints"
+      - key: "erd"
+        path: "{outputs_dir}/phase-03/erd.mermaid"
+        description: "Entity Relationship Diagram in mermaid syntax"
+      - key: "route_map"
+        path: "{outputs_dir}/phase-03/route-map.md"
+        description: "API route map (method, path, request/response shape, auth level)"
+      - key: "error_standards"
+        path: "{outputs_dir}/phase-03/error-standards.md"
+        description: "Error response standards (codes, shapes)"
+      - key: "auth_strategy"
+        path: "{outputs_dir}/phase-03/auth-strategy.md"
+        description: "Authentication and authorization strategy"
+
+  # ===========================================================================
+  # PHASE 4 — Backend Module Generation
+  # ===========================================================================
+  - id: 4
+    name: "Backend Module Generation"
+    description: "Generate Zod schemas, routes, controllers, and middleware per module."
+
+    persona:
+      role: "Backend Engineer"
+      file: "personas/backend-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/MODULE_TEMPLATE.md"
+        description: "File structure, naming, Zod patterns, controller patterns"
+
+    context:
+      brd_mode: "sliced"  # Extract only the relevant module's requirements
+      slice_by: "module"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "data_models"
+          filter: "relevant_model"  # Only the model for this module
+        - phase: 3
+          key: "route_map"
+          filter: "relevant_routes"  # Only routes for this module
+        - phase: 3
+          key: "error_standards"
+
+    task_template: "templates/phases/phase-04-backend-modules.md"
+
+    iteration:
+      mode: "per_module"  # Run once per module, independently
+      order: "independent_first"  # Start with models that have no foreign key dependencies
+      module_source: "phase_3_data_models"  # Derive module list from Phase 3 output
+
+    gate:
+      type: "verify"  # MANUAL VERIFICATION
+      instructions: >
+        Does the Zod schema match the model exactly? Are all routes from
+        the route map implemented? Are auth guards applied correctly?
+        These Zod schemas become the frontend's source of truth — they must be right.
+
+    outputs:
+      - key: "module_code"
+        path: "{outputs_dir}/phase-04/{module_name}/"
+        description: "Zod schemas, routes, controllers, middleware for the module"
+
+  # ===========================================================================
+  # PHASE 5 — Backend Testing
+  # ===========================================================================
+  - id: 5
+    name: "Backend Testing"
+    description: "Generate unit tests, integration tests, and validation tests per module."
+
+    persona:
+      role: "QA Engineer"
+      file: "personas/qa-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/TESTING_CONVENTIONS.md"
+        description: "Behavioral testing approach, file structure, naming, coverage rules"
+
+    context:
+      brd_mode: "sliced"
+      slice_by: "module"
+      sources:
+        - phase: 1
+          key: "brd"
+          filter: "acceptance_criteria"  # Only relevant requirements and acceptance criteria
+        - phase: 4
+          key: "module_code"
+          filter: "relevant_module"
+        - phase: 3
+          key: "error_standards"
+
+    task_template: "templates/phases/phase-05-backend-testing.md"
+
+    iteration:
+      mode: "per_module"
+      order: "match_phase_4"  # Follow the same module order as Phase 4
+
+    # Phase 5 may PRODUCE a skill on first run
+    produces_skill:
+      condition: "if_not_exists"
+      path: "skills/cross-project/TESTING_CONVENTIONS.md"
+
+    gate:
+      type: "tests_pass"
+      instructions: >
+        Are tests asserting on outcomes (response status, response body,
+        database state) rather than implementation (function was called,
+        mock was invoked with specific args)?
+
+    outputs:
+      - key: "backend_tests"
+        path: "{outputs_dir}/phase-05/{module_name}/"
+        description: "Unit tests, integration tests, validation tests"
+
+  # ===========================================================================
+  # PHASE 6 — Database Migrations & Seed Data
+  # ===========================================================================
+  - id: 6
+    name: "Database Migrations & Seed Data"
+    description: "Generate migration scripts, rollback scripts, and seed data."
+
+    persona:
+      role: "Backend Engineer / DBA"
+      file: "personas/backend-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/MIGRATION_TEMPLATE.md"
+        description: "Migration file naming, index conventions, seed data format"
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "data_models"
+        - phase: 3
+          key: "erd"
+
+    task_template: "templates/phases/phase-06-migrations.md"
+
+    iteration:
+      mode: "single"  # All migrations generated together for referential integrity
+
+    gate:
+      type: "review"
+      instructions: >
+        Do migrations match the finalized models from Phase 4 (not just Phase 3)?
+        Is seed data realistic enough for meaningful testing?
+
+    outputs:
+      - key: "migrations"
+        path: "{outputs_dir}/phase-06/migrations/"
+        description: "Migration scripts with rollbacks"
+      - key: "seed_data"
+        path: "{outputs_dir}/phase-06/seeds/"
+        description: "Seed data for dev, staging, test environments"
+
+  # ===========================================================================
+  # PHASE 7 — UI/UX Design
+  # ===========================================================================
+  - id: 7
+    name: "UI/UX Design"
+    description: "Generate wireframes, page inventory, component inventory, and user flows."
+
+    persona:
+      role: "UI Designer"
+      file: "personas/ui-designer.md"
+
+    skill: null  # Persona flexibility preferred for creative design work
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "route_map"  # For data shape awareness
+
+    task_template: "templates/phases/phase-07-ui-design.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "review"
+      instructions: >
+        Does every BRD requirement have a corresponding screen?
+        Are the user flows complete? Are error/empty states accounted for?
+
+    outputs:
+      - key: "page_inventory"
+        path: "{outputs_dir}/phase-07/page-inventory.md"
+        description: "All screens needed"
+      - key: "wireframes"
+        path: "{outputs_dir}/phase-07/wireframes/"
+        description: "Wireframe descriptions or mockups per page"
+      - key: "user_flows"
+        path: "{outputs_dir}/phase-07/user-flows.mermaid"
+        description: "User flow diagrams in mermaid syntax"
+      - key: "component_inventory"
+        path: "{outputs_dir}/phase-07/component-inventory.md"
+        description: "Reusable UI components"
+
+  # ===========================================================================
+  # PHASE 8 — Style Guide
+  # ===========================================================================
+  - id: 8
+    name: "Style Guide"
+    description: "Extract concrete style guide from Phase 7 wireframes/mockups."
+
+    persona:
+      role: "UI Designer"
+      file: "personas/ui-designer.md"
+
+    skill: null  # This phase PRODUCES a skill, doesn't consume one
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 7
+          key: "wireframes"  # Screenshots of mock screens/wireframes
+
+    task_template: "templates/phases/phase-08-style-guide.md"
+
+    iteration:
+      mode: "single"
+
+    # This phase produces the STYLE_GUIDE skill used by Phase 10+
+    produces_skill:
+      condition: "always"  # Generated fresh each project
+      path: "skills/per-project/STYLE_GUIDE.md"
+
+    gate:
+      type: "review"
+      instructions: >
+        Is every rule specific enough to produce identical results across
+        independently prompted pages? If a rule says "use a muted color"
+        instead of "use text-slate-500", it's not specific enough.
+
+    outputs:
+      - key: "style_guide"
+        path: "{outputs_dir}/phase-08/STYLE_GUIDE.md"
+        description: "Concrete style guide with exact values (becomes a skill for Phase 10+)"
+
+  # ===========================================================================
+  # PHASE 9 — Frontend API Modules
+  # ===========================================================================
+  - id: 9
+    name: "Frontend API Modules"
+    description: "Copy Zod schemas from backend, generate types, hooks, services, and mock data."
+
+    persona:
+      role: "Frontend Engineer"
+      file: "personas/frontend-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/API_STANDARD.md"
+        description: "Zod copy rules, hook patterns, service layer structure, endpoint config"
+
+    context:
+      brd_mode: "sliced"
+      slice_by: "module"
+      multi_source: true  # ⚠️ Flag — requires assembling from multiple phases
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 4
+          key: "module_code"
+          filter: "zod_files"  # Only the Zod schema files from backend
+        - phase: 3
+          key: "route_map"
+
+    task_template: "templates/phases/phase-09-frontend-api.md"
+
+    iteration:
+      mode: "per_module"
+      order: "match_phase_4"
+
+    gate:
+      type: "review"
+      check: "zod_match"  # ⚠️ Special gate — Zod schemas must match backend exactly
+      instructions: >
+        Do the copied Zod schemas exactly match the backend?
+        Are mock data factories producing realistic data that covers edge cases?
+
+    outputs:
+      - key: "frontend_api"
+        path: "{outputs_dir}/phase-09/{module_name}/"
+        description: "Copied Zod schemas, TypeScript types, hooks, services, endpoint configs, mock data"
+
+  # ===========================================================================
+  # PHASE 10 — Page Generation
+  # ===========================================================================
+  - id: 10
+    name: "Page Generation"
+    description: "Build page components using style guide, hooks, and mock data."
+
+    persona:
+      role: "Frontend Engineer"
+      file: "personas/frontend-engineer.md"
+
+    skill:
+      - path: "skills/per-project/STYLE_GUIDE.md"
+        description: "Visual rules from Phase 8 — colors, spacing, typography, components"
+
+    context:
+      brd_mode: "sliced"
+      slice_by: "module"
+      multi_source: true  # ⚠️ Requires BRD + Phase 7 design + Phase 9 hooks/types
+      sources:
+        - phase: 1
+          key: "brd"
+          filter: "relevant_module_requirements"
+        - phase: 7
+          key: "wireframes"
+          filter: "relevant_page"  # Only the wireframe for this page
+        - phase: 9
+          key: "frontend_api"
+          filter: "relevant_module"  # Hook signatures, mock factories, types
+
+    task_template: "templates/phases/phase-10-pages.md"
+
+    iteration:
+      mode: "per_page"  # Each page prompted individually
+      order: "independent_first"
+      page_source: "phase_7_page_inventory"
+
+    gate:
+      type: "review"
+      instructions: >
+        Does the page match the design? Are Tailwind classes and shadcn
+        components used consistently with the style guide?
+        Do all states render correctly? Compare against previously generated pages.
+
+    outputs:
+      - key: "page_components"
+        path: "{outputs_dir}/phase-10/{page_name}/"
+        description: "Page components, layout components"
+
+  # ===========================================================================
+  # PHASE 11 — Frontend Testing
+  # ===========================================================================
+  - id: 11
+    name: "Frontend Testing"
+    description: "Generate component tests, hook tests, form validation tests."
+
+    persona:
+      role: "QA Engineer"
+      file: "personas/qa-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/TESTING_CONVENTIONS.md"
+        description: "Behavioral testing approach, component/hook test patterns"
+
+    context:
+      brd_mode: "sliced"
+      slice_by: "module"
+      sources:
+        - phase: 1
+          key: "brd"
+          filter: "acceptance_criteria"
+        - phase: 10
+          key: "page_components"
+          filter: "relevant_page"
+        - phase: 9
+          key: "frontend_api"
+          filter: "mock_data"
+
+    task_template: "templates/phases/phase-11-frontend-testing.md"
+
+    iteration:
+      mode: "per_page"
+      order: "match_phase_10"
+
+    gate:
+      type: "tests_pass"
+      instructions: >
+        Are tests written from the user's perspective? A good test reads like
+        "when the user clicks submit with an empty name field, they see a
+        validation error." A bad test reads like "expect setError to have
+        been called with {name: 'required'}."
+
+    outputs:
+      - key: "frontend_tests"
+        path: "{outputs_dir}/phase-11/{page_name}/"
+        description: "Component tests, hook tests, form validation tests"
+
+  # ===========================================================================
+  # PHASE 12 — Integration & E2E Testing
+  # ===========================================================================
+  - id: 12
+    name: "Integration & E2E Testing"
+    description: "Generate E2E test suites covering user flows and cross-module integration."
+
+    persona:
+      role: "QA Engineer"
+      file: "personas/qa-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/E2E_PATTERNS.md"
+        description: "Selector strategy, fixture structure, flow test patterns"
+
+    context:
+      brd_mode: "full"
+      multi_source: true  # ⚠️ Needs BRD + Phase 3 routes + Phase 7 user flows
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "route_map"
+        - phase: 7
+          key: "user_flows"
+
+    task_template: "templates/phases/phase-12-e2e-testing.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "tests_pass"
+      check: "e2e_flows"  # ⚠️ All E2E flows pass against running backend
+      instructions: >
+        Do E2E tests map to real user journeys? Is the auth flow fully covered?
+
+    outputs:
+      - key: "e2e_tests"
+        path: "{outputs_dir}/phase-12/"
+        description: "E2E test suites"
+
+  # ===========================================================================
+  # PHASE 13 — Code Review (Rolling)
+  # ===========================================================================
+  - id: 13
+    name: "Code Review"
+    description: "Review code for security, performance, consistency, and completeness."
+
+    persona:
+      role: "Senior Architect / Tech Lead"
+      file: "personas/software-architect.md"
+
+    skill:
+      - path: "skills/cross-project/REVIEW_CHECKLIST.md"
+        description: "Security checks, performance checks, consistency rules"
+
+    context:
+      brd_mode: "full"
+      multi_source: true  # ⚠️ Needs BRD + architecture + relevant code
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "data_models"
+        - phase: 3
+          key: "route_map"
+        - phase: 3
+          key: "error_standards"
+        # Code to review is passed dynamically based on checkpoint
+        - dynamic: "relevant_code"
+
+    task_template: "templates/phases/phase-13-code-review.md"
+
+    iteration:
+      mode: "checkpoint"  # Not per-module — triggered at specific points
+      checkpoints:
+        - name: "after_first_backend_module"
+          trigger: "phase_4_first_complete"
+          review_focus: "Controller patterns, auth guards, error handling, Zod structure"
+        - name: "after_backend_track"
+          trigger: "phase_6_complete"
+          review_focus: "Cross-module consistency, migration correctness, query patterns"
+        - name: "after_first_frontend_page"
+          trigger: "phase_10_first_complete"
+          review_focus: "Component structure, style guide adherence, hook usage patterns"
+        - name: "after_frontend_track"
+          trigger: "phase_11_complete"
+          review_focus: "Cross-page consistency, API contract alignment, state management"
+        - name: "final_sweep"
+          trigger: "phase_12_complete"
+          review_focus: "Full security review, performance review, everything together"
+
+    gate:
+      type: "review"
+      check: "issues_resolved"  # ⚠️ All critical issues must be resolved before proceeding
+      instructions: >
+        Prioritize security and performance findings. Verify the AI isn't
+        hallucinating issues that don't exist in the code. Pay special
+        attention to first-module reviews.
+
+    outputs:
+      - key: "review_report"
+        path: "{outputs_dir}/phase-13/{checkpoint_name}/"
+        description: "Review report with recommended fixes"
+
+  # ===========================================================================
+  # PHASE 14 — Documentation
+  # ===========================================================================
+  - id: 14
+    name: "Documentation"
+    description: "Generate README, API docs, deployment guide, and onboarding guide."
+
+    persona:
+      role: "Technical Writer"
+      file: "personas/technical-writer.md"
+
+    skill:
+      - path: "skills/cross-project/DOC_TEMPLATES.md"
+        description: "README structure, API doc format, onboarding guide template"
+
+    context:
+      brd_mode: "full"
+      multi_source: true
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "data_models"
+        - phase: 3
+          key: "route_map"
+        - phase: 4
+          key: "module_code"
+          filter: "zod_schemas"
+
+    task_template: "templates/phases/phase-14-documentation.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "review"
+      instructions: >
+        Does the README setup actually work? Do the API doc examples match reality?
+
+    outputs:
+      - key: "readme"
+        path: "{outputs_dir}/phase-14/README.md"
+        description: "Project README"
+      - key: "api_docs"
+        path: "{outputs_dir}/phase-14/api-docs.md"
+        description: "API documentation"
+      - key: "onboarding_guide"
+        path: "{outputs_dir}/phase-14/onboarding-guide.md"
+        description: "Developer onboarding guide"
+
+  # ===========================================================================
+  # PHASE 15 — Deployment Configuration
+  # ===========================================================================
+  - id: 15
+    name: "Deployment Configuration"
+    description: "Generate Dockerfiles, CI/CD configs, and environment templates."
+
+    persona:
+      role: "DevOps Engineer"
+      file: "personas/devops-engineer.md"
+
+    skill:
+      - path: "skills/cross-project/INFRA_STANDARD.md"
+        description: "Dockerfile patterns, CI/CD template, env config conventions"
+
+    context:
+      brd_mode: "full"
+      sources:
+        - phase: 1
+          key: "brd"
+        - phase: 3
+          key: "data_models"
+        - phase: 3
+          key: "auth_strategy"
+        - phase: 14
+          key: "readme"  # Environment variable docs
+
+    task_template: "templates/phases/phase-15-deployment.md"
+
+    iteration:
+      mode: "single"
+
+    gate:
+      type: "review"
+      instructions: >
+        Does Docker Compose work locally? Does the CI/CD pipeline match
+        your actual infrastructure?
+
+    outputs:
+      - key: "dockerfiles"
+        path: "{outputs_dir}/phase-15/docker/"
+        description: "Dockerfiles for backend and frontend"
+      - key: "ci_cd"
+        path: "{outputs_dir}/phase-15/ci-cd/"
+        description: "CI/CD pipeline configuration"
+      - key: "env_templates"
+        path: "{outputs_dir}/phase-15/env/"
+        description: "Environment configuration templates"
+
+
+# =============================================================================
+# Parallel Execution Rules
+# =============================================================================
+# After Phase 3 is verified, two tracks can run in parallel:
+#   Backend Track:  Phase 4 → 5 → 6
+#   Design Track:   Phase 7 → 8
+#
+# Frontend track begins once BOTH tracks are complete:
+#   Phase 9 → 10 → 11 → 12 → 13 → 14 → 15
+# =============================================================================
+parallel_tracks:
+  backend:
+    start_after: 3
+    phases: [4, 5, 6]
+  design:
+    start_after: 3
+    phases: [7, 8]
+  frontend:
+    start_after: ["backend", "design"]  # Both tracks must complete
+    phases: [9, 10, 11, 12, 13, 14, 15]
+
+
+# =============================================================================
+# Code Review Checkpoints (Phase 13 triggers)
+# =============================================================================
+# Phase 13 is not sequential — it runs at these checkpoints:
+#   1. After first backend module (Phase 4, first module)
+#   2. After backend track complete (Phases 4–6)
+#   3. After first frontend page (Phase 10, first page)
+#   4. After frontend track complete (Phases 9–11)
+#   5. Final sweep (after Phase 12)
+# =============================================================================

@@ -1,0 +1,800 @@
+# =============================================================================
+# AI-Assisted Fullstack Development Workflow — Dependency Map
+# =============================================================================
+# Machine-readable dependency graph for the orchestrator. Defines:
+#   1. Phase-level dependencies (which phases gate which)
+#   2. Data-level dependencies (which outputs feed into which inputs)
+#   3. Skill dependencies (which skills are consumed/produced per phase)
+#   4. Parallel execution tracks
+#   5. Code review checkpoint triggers
+#   6. Change propagation rules
+#
+# The orchestrator uses this file to:
+#   - Validate that all prerequisite phases are complete before starting a phase
+#   - Resolve which output files to load as context for a phase
+#   - Determine which phases must re-run when a BRD change occurs
+#   - Identify which phases can run in parallel
+# =============================================================================
+
+
+# =============================================================================
+# Phase-Level Dependencies
+# =============================================================================
+# Each phase lists the phases that must be COMPLETE (gate passed) before it
+# can start. The orchestrator blocks execution until all dependencies are met.
+#
+# Key:
+#   depends_on  — phases that must be complete (gate passed)
+#   gate        — the gate type that must pass before dependents can start
+# =============================================================================
+phase_dependencies:
+
+  - id: 1
+    name: "Business Requirements"
+    depends_on: []  # Entry point — no dependencies
+    gate: "verify"  # Must be manually verified before anything else runs
+
+  - id: 2
+    name: "Project Planning & Estimation"
+    depends_on: [1]
+    gate: "review"
+
+  - id: 3
+    name: "Architecture & Model Design"
+    depends_on: [1, 2]
+    gate: "review"
+
+  - id: 4
+    name: "Backend Module Generation"
+    depends_on: [1, 3]
+    gate: "verify"  # Per-module verification
+
+  - id: 5
+    name: "Backend Testing"
+    depends_on: [1, 3, 4]
+    gate: "tests_pass"
+
+  - id: 6
+    name: "Database Migrations & Seed Data"
+    depends_on: [1, 3]
+    gate: "review"
+    notes: >
+      Phase 6 technically depends only on Phase 3 for model definitions,
+      but the gate instructions say to verify against Phase 4's finalized
+      models. Run after Phase 4 when possible.
+    soft_depends_on: [4]  # Recommended but not strictly required
+
+  - id: 7
+    name: "UI/UX Design"
+    depends_on: [1, 3]
+    gate: "review"
+
+  - id: 8
+    name: "Style Guide"
+    depends_on: [1, 7]
+    gate: "review"
+
+  - id: 9
+    name: "Frontend API Modules"
+    depends_on: [1, 3, 4]
+    gate: "review"
+    notes: >
+      Phase 9 copies Zod schemas from Phase 4, so the backend track
+      (at least Phase 4) must be complete. Also needs Phase 3 route map.
+      Phase 8 is not a direct dependency — it is a dependency of Phase 10.
+
+  - id: 10
+    name: "Page Generation"
+    depends_on: [1, 7, 8, 9]
+    gate: "review"
+    notes: >
+      Multi-source context. Needs BRD, wireframes (Phase 7),
+      style guide skill (Phase 8), and hooks/types (Phase 9).
+
+  - id: 11
+    name: "Frontend Testing"
+    depends_on: [1, 9, 10]
+    gate: "tests_pass"
+
+  - id: 12
+    name: "Integration & E2E Testing"
+    depends_on: [1, 3, 7]
+    gate: "tests_pass"
+    notes: >
+      E2E tests need the full BRD, route map (Phase 3), and user flows
+      (Phase 7). Implicitly requires the backend and frontend to be built
+      (Phases 4–11) since the tests run against live services.
+    soft_depends_on: [4, 5, 6, 9, 10, 11]  # Must be deployed to test against
+
+  - id: 13
+    name: "Code Review"
+    depends_on: [1, 3]
+    gate: "review"
+    notes: >
+      Phase 13 is checkpoint-driven, not sequential. Its actual dependencies
+      vary per checkpoint — see code_review_checkpoints below.
+
+  - id: 14
+    name: "Documentation"
+    depends_on: [1, 3, 4]
+    gate: "review"
+    notes: >
+      Needs BRD, architecture (Phase 3), and module code/Zod schemas
+      (Phase 4) to document the actual implementation accurately.
+    soft_depends_on: [13]  # Should run after final code review
+
+  - id: 15
+    name: "Deployment Configuration"
+    depends_on: [1, 3, 14]
+    gate: "review"
+
+
+# =============================================================================
+# Data-Level Dependencies
+# =============================================================================
+# Maps each phase to the specific output keys it consumes from prior phases.
+# This is the orchestrator's guide for assembling context before prompting.
+#
+# Key:
+#   phase       — the source phase ID
+#   key         — the output key from that phase (matches phases.yaml outputs)
+#   filter      — optional filter to narrow the output (e.g., module-sliced)
+#   required    — whether the output must exist (true) or is optional (false)
+# =============================================================================
+data_dependencies:
+
+  # Phase 1 has no data dependencies (user provides raw input)
+
+  - consumer: 2
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+
+  - consumer: 3
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 2, key: "project_plan", required: true }
+
+  - consumer: 4
+    inputs:
+      - { phase: 1, key: "brd", filter: "module_slice", required: true }
+      - { phase: 3, key: "data_models", filter: "relevant_model", required: true }
+      - { phase: 3, key: "route_map", filter: "relevant_routes", required: true }
+      - { phase: 3, key: "error_standards", required: true }
+
+  - consumer: 5
+    inputs:
+      - { phase: 1, key: "brd", filter: "acceptance_criteria", required: true }
+      - { phase: 4, key: "module_code", filter: "relevant_module", required: true }
+      - { phase: 3, key: "error_standards", required: true }
+
+  - consumer: 6
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "data_models", required: true }
+      - { phase: 3, key: "erd", required: true }
+
+  - consumer: 7
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "route_map", required: true }
+
+  - consumer: 8
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 7, key: "wireframes", required: true }
+
+  - consumer: 9
+    inputs:
+      - { phase: 1, key: "brd", filter: "module_slice", required: true }
+      - { phase: 4, key: "module_code", filter: "zod_files", required: true }
+      - { phase: 3, key: "route_map", required: true }
+
+  - consumer: 10
+    inputs:
+      - { phase: 1, key: "brd", filter: "relevant_module_requirements", required: true }
+      - { phase: 7, key: "wireframes", filter: "relevant_page", required: true }
+      - { phase: 9, key: "frontend_api", filter: "relevant_module", required: true }
+    skill_inputs:
+      - { path: "skills/per-project/STYLE_GUIDE.md", source_phase: 8, required: true }
+
+  - consumer: 11
+    inputs:
+      - { phase: 1, key: "brd", filter: "acceptance_criteria", required: true }
+      - { phase: 10, key: "page_components", filter: "relevant_page", required: true }
+      - { phase: 9, key: "frontend_api", filter: "mock_data", required: true }
+
+  - consumer: 12
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "route_map", required: true }
+      - { phase: 7, key: "user_flows", required: true }
+
+  - consumer: 13
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "data_models", required: true }
+      - { phase: 3, key: "route_map", required: true }
+      - { phase: 3, key: "error_standards", required: true }
+      - { dynamic: "relevant_code", required: true }  # Resolved per checkpoint
+
+  - consumer: 14
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "data_models", required: true }
+      - { phase: 3, key: "route_map", required: true }
+      - { phase: 4, key: "module_code", filter: "zod_schemas", required: true }
+
+  - consumer: 15
+    inputs:
+      - { phase: 1, key: "brd", required: true }
+      - { phase: 3, key: "data_models", required: true }
+      - { phase: 3, key: "auth_strategy", required: true }
+      - { phase: 14, key: "readme", required: true }
+
+
+# =============================================================================
+# Skill Dependencies
+# =============================================================================
+# Maps each phase to the skills it consumes and/or produces.
+# The orchestrator uses this to:
+#   - Load skill files into the prompt context
+#   - Know when a skill must be generated before a phase can run
+#   - Track cross-project vs per-project skill lifecycle
+#
+# Key:
+#   consumes    — skills loaded into the prompt (from skills/ directory)
+#   produces    — skills generated by this phase's output
+#   condition   — "if_not_exists" (cross-project) or "always" (per-project)
+#   reusable    — "cross-project" (persists) or "per-project" (regenerated)
+# =============================================================================
+skill_dependencies:
+
+  - phase: 1
+    consumes:
+      - path: "skills/cross-project/BRD_FORMAT.md"
+        required: true
+    produces: []
+
+  - phase: 2
+    consumes: []  # Persona flexibility preferred
+    produces: []
+
+  - phase: 3
+    consumes:
+      - path: "skills/cross-project/ARCHITECTURE_STANDARD.md"
+        required: false  # May not exist on first project run
+    produces:
+      - path: "skills/cross-project/ARCHITECTURE_STANDARD.md"
+        condition: "if_not_exists"
+        reusable: "cross-project"
+
+  - phase: 4
+    consumes:
+      - path: "skills/cross-project/MODULE_TEMPLATE.md"
+        required: true
+    produces: []
+
+  - phase: 5
+    consumes:
+      - path: "skills/cross-project/TESTING_CONVENTIONS.md"
+        required: false  # May not exist on first project run
+    produces:
+      - path: "skills/cross-project/TESTING_CONVENTIONS.md"
+        condition: "if_not_exists"
+        reusable: "cross-project"
+
+  - phase: 6
+    consumes:
+      - path: "skills/cross-project/MIGRATION_TEMPLATE.md"
+        required: true
+    produces: []
+
+  - phase: 7
+    consumes: []  # Persona flexibility preferred for creative work
+    produces: []
+
+  - phase: 8
+    consumes: []  # This phase produces a skill, doesn't consume one
+    produces:
+      - path: "skills/per-project/STYLE_GUIDE.md"
+        condition: "always"  # Regenerated fresh each project
+        reusable: "per-project"
+
+  - phase: 9
+    consumes:
+      - path: "skills/cross-project/API_STANDARD.md"
+        required: true
+    produces: []
+
+  - phase: 10
+    consumes:
+      - path: "skills/per-project/STYLE_GUIDE.md"
+        required: true
+        source_phase: 8  # Must be produced by Phase 8 first
+    produces: []
+
+  - phase: 11
+    consumes:
+      - path: "skills/cross-project/TESTING_CONVENTIONS.md"
+        required: true  # Should exist by now (Phase 5 produces it)
+    produces: []
+
+  - phase: 12
+    consumes:
+      - path: "skills/cross-project/E2E_PATTERNS.md"
+        required: true
+    produces: []
+
+  - phase: 13
+    consumes:
+      - path: "skills/cross-project/REVIEW_CHECKLIST.md"
+        required: true
+    produces: []
+
+  - phase: 14
+    consumes:
+      - path: "skills/cross-project/DOC_TEMPLATES.md"
+        required: true
+    produces: []
+
+  - phase: 15
+    consumes:
+      - path: "skills/cross-project/INFRA_STANDARD.md"
+        required: true
+    produces: []
+
+
+# =============================================================================
+# Parallel Execution Tracks
+# =============================================================================
+# Defines which phases can run concurrently. In a VSCode extension context
+# (Claude Code, Copilot), "parallel" means you open two separate sessions
+# and work both tracks simultaneously — not programmatic concurrency.
+#
+# The orchestrator uses this to:
+#   - Tell you which tracks are available to start after Phase 3
+#   - Show progress across both tracks
+#   - Validate that both tracks are complete before the frontend track begins
+#
+# Rules:
+#   - Phases within a track run sequentially (4 → 5 → 6)
+#   - Tracks can be worked in parallel across two sessions (backend ∥ design)
+#   - A track's start_after condition must be met before any phase begins
+#   - When start_after references another track name, ALL phases in that
+#     track must be marked complete before the dependent track unlocks
+# =============================================================================
+parallel_tracks:
+
+  backend:
+    name: "Backend Track"
+    start_after:
+      phases: [3]  # Phase 3 gate must pass
+    sequence: [4, 5, 6]
+    description: "Backend module generation, testing, and migrations"
+
+  design:
+    name: "Design Track"
+    start_after:
+      phases: [3]  # Phase 3 gate must pass
+    sequence: [7, 8]
+    description: "UI/UX design and style guide extraction"
+
+  frontend:
+    name: "Frontend Track"
+    start_after:
+      tracks: ["backend", "design"]  # Both tracks must complete
+    sequence: [9, 10, 11, 12]
+    description: "Frontend API modules, pages, testing, and E2E"
+
+  finalization:
+    name: "Finalization Track"
+    start_after:
+      tracks: ["frontend"]
+      phases: [13]  # Final code review sweep must complete
+    sequence: [14, 15]
+    description: "Documentation and deployment configuration"
+
+
+# =============================================================================
+# Code Review Checkpoints (Phase 13)
+# =============================================================================
+# Phase 13 is not a linear phase — it triggers at specific checkpoints
+# throughout the workflow. Each checkpoint has its own dependencies and
+# review focus.
+#
+# The orchestrator watches for checkpoint triggers and injects Phase 13
+# into the workflow at the right time.
+# =============================================================================
+code_review_checkpoints:
+
+  - name: "after_first_backend_module"
+    trigger:
+      event: "phase_4_first_module_complete"
+      description: "First module in Phase 4 passes its verify gate"
+    depends_on:
+      phases: [3]
+      data:
+        - { phase: 4, key: "module_code", filter: "first_module" }
+    review_focus: >
+      Controller patterns, auth guards, error handling, Zod structure.
+      This is the most important checkpoint — patterns established in the
+      first module propagate to all subsequent modules.
+    blocking: true  # Must pass before generating more Phase 4 modules
+
+  - name: "after_backend_track"
+    trigger:
+      event: "phase_6_complete"
+      description: "Phase 6 gate passes (backend track complete)"
+    depends_on:
+      phases: [4, 5, 6]
+      data:
+        - { phase: 4, key: "module_code", filter: "all_modules" }
+        - { phase: 5, key: "backend_tests", filter: "all_modules" }
+        - { phase: 6, key: "migrations" }
+    review_focus: >
+      Cross-module consistency, migration correctness, query patterns,
+      N+1 queries, missing indexes, inconsistent error handling.
+    blocking: false  # Design track can continue; blocks frontend track
+
+  - name: "after_first_frontend_page"
+    trigger:
+      event: "phase_10_first_page_complete"
+      description: "First page in Phase 10 passes its review gate"
+    depends_on:
+      phases: [9]
+      data:
+        - { phase: 10, key: "page_components", filter: "first_page" }
+        - { phase: 9, key: "frontend_api", filter: "relevant_module" }
+    review_focus: >
+      Component structure, style guide adherence, hook usage patterns.
+      Same logic as the backend checkpoint — catch pattern issues before
+      generating more pages.
+    blocking: true  # Must pass before generating more Phase 10 pages
+
+  - name: "after_frontend_track"
+    trigger:
+      event: "phase_11_complete"
+      description: "Phase 11 gate passes (frontend testing complete)"
+    depends_on:
+      phases: [9, 10, 11]
+      data:
+        - { phase: 10, key: "page_components", filter: "all_pages" }
+        - { phase: 9, key: "frontend_api", filter: "all_modules" }
+        - { phase: 11, key: "frontend_tests", filter: "all_pages" }
+    review_focus: >
+      Cross-page consistency, API contract alignment, state management,
+      Zod schema drift between frontend and backend.
+    blocking: true  # Must pass before E2E testing
+
+  - name: "final_sweep"
+    trigger:
+      event: "phase_12_complete"
+      description: "Phase 12 gate passes (E2E testing complete)"
+    depends_on:
+      phases: [4, 5, 6, 9, 10, 11, 12]
+      data:
+        - { dynamic: "all_project_code" }
+    review_focus: >
+      Full security review, performance review, everything together.
+      This is the final gate before documentation and deployment.
+    blocking: true  # Must pass before Phase 14
+
+
+# =============================================================================
+# Change Propagation Rules
+# =============================================================================
+# When a phase's output changes (e.g., BRD is updated, architecture is
+# revised), all downstream phases that depend on that output must re-run.
+# The orchestrator uses these rules to calculate the "blast radius" of a
+# change and prompt the user to re-run affected phases.
+#
+# impact_map: For each phase, lists all phases that must re-run if its
+# output changes. Computed from the transitive closure of data_dependencies.
+# =============================================================================
+change_propagation:
+
+  # Phase 1 (BRD) changes affect EVERYTHING — it is the universal anchor
+  - changed_phase: 1
+    re_run: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    severity: "critical"
+    notes: >
+      BRD changes are the most expensive. Every phase references the BRD.
+      Scope the change to specific modules when possible — the orchestrator
+      can re-run only the affected module iterations in per-module phases.
+
+  # Phase 2 (Project Plan) changes — only affects architecture
+  - changed_phase: 2
+    re_run: [3]
+    severity: "low"
+    notes: >
+      Plan changes rarely affect the architecture unless the build order
+      or module grouping changes significantly.
+
+  # Phase 3 (Architecture) changes ripple through both tracks
+  - changed_phase: 3
+    re_run: [4, 5, 6, 7, 9, 12, 13, 14, 15]
+    severity: "high"
+    notes: >
+      Architecture changes (model fields, route map, error standards) affect
+      backend modules, frontend API modules, E2E tests, code review, docs,
+      and deployment. Design track (7, 8) only re-runs if the route map
+      changes (data shapes affect UI design).
+
+  # Phase 4 (Backend Modules) changes affect testing and frontend
+  - changed_phase: 4
+    re_run: [5, 9, 14]
+    severity: "medium"
+    notes: >
+      Backend module changes (Zod schemas, routes) affect backend tests,
+      frontend API modules (Zod copy), and documentation. If only one
+      module changed, only re-run that module's iterations in Phases 5 and 9.
+
+  # Phase 5 (Backend Tests) changes — minimal downstream impact
+  - changed_phase: 5
+    re_run: []
+    severity: "low"
+    notes: >
+      Test changes do not affect other phases. However, if tests revealed
+      bugs that required Phase 4 changes, those changes propagate per
+      Phase 4's rules above.
+
+  # Phase 6 (Migrations) changes — minimal downstream impact
+  - changed_phase: 6
+    re_run: []
+    severity: "low"
+    notes: >
+      Migration changes are self-contained. If migrations revealed model
+      issues that required Phase 3 changes, those propagate per Phase 3's
+      rules above.
+
+  # Phase 7 (UI Design) changes affect style guide and pages
+  - changed_phase: 7
+    re_run: [8, 10, 12]
+    severity: "medium"
+    notes: >
+      Design changes affect the style guide (Phase 8), page generation
+      (Phase 10), and E2E tests (Phase 12, user flows). If only one page
+      changed, only re-run that page's iteration in Phase 10.
+
+  # Phase 8 (Style Guide) changes affect all pages
+  - changed_phase: 8
+    re_run: [10]
+    severity: "high"
+    notes: >
+      Style guide changes affect EVERY page. All Phase 10 iterations
+      must re-run to maintain visual consistency. This is expensive —
+      review the style guide thoroughly before proceeding.
+
+  # Phase 9 (Frontend API) changes affect pages and frontend tests
+  - changed_phase: 9
+    re_run: [10, 11]
+    severity: "medium"
+    notes: >
+      Frontend API changes (hooks, types, mock data) affect page
+      components and frontend tests. If only one module changed, only
+      re-run affected pages.
+
+  # Phase 10 (Pages) changes affect frontend tests
+  - changed_phase: 10
+    re_run: [11]
+    severity: "low"
+    notes: >
+      Page changes require re-running the corresponding frontend tests.
+
+  # Phase 11 (Frontend Tests) changes — minimal downstream impact
+  - changed_phase: 11
+    re_run: []
+    severity: "low"
+
+  # Phase 12 (E2E Tests) changes — minimal downstream impact
+  - changed_phase: 12
+    re_run: []
+    severity: "low"
+
+  # Phase 13 (Code Review) changes — may trigger re-runs of reviewed code
+  - changed_phase: 13
+    re_run: []
+    severity: "variable"
+    notes: >
+      Code review findings may require changes to any reviewed phase.
+      The re-run scope depends on which phases had issues. The orchestrator
+      should prompt the user to re-run specific phases based on the review
+      report findings.
+
+  # Phase 14 (Documentation) changes — only affects deployment
+  - changed_phase: 14
+    re_run: [15]
+    severity: "low"
+    notes: >
+      Documentation changes only affect deployment if environment variable
+      docs changed (Phase 15 references the README for env var info).
+
+  # Phase 15 (Deployment) changes — terminal phase, no downstream impact
+  - changed_phase: 15
+    re_run: []
+    severity: "low"
+
+
+# =============================================================================
+# Output Key Registry
+# =============================================================================
+# Canonical list of all output keys produced across all phases.
+# The orchestrator uses this to validate that context source references
+# in phases.yaml point to real outputs.
+# =============================================================================
+output_registry:
+
+  - phase: 1
+    outputs:
+      - key: "brd"
+        type: "document"
+        format: "markdown"
+        sliceable: true  # Can be sliced by module for per-module phases
+        slice_key: "module_id"  # H3 heading MODULE_ID used for slicing
+
+  - phase: 2
+    outputs:
+      - key: "project_plan"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+
+  - phase: 3
+    outputs:
+      - key: "data_models"
+        type: "document"
+        format: "markdown"
+        sliceable: true
+        slice_key: "model_name"  # Can extract individual model definitions
+      - key: "erd"
+        type: "diagram"
+        format: "mermaid"
+        sliceable: false
+      - key: "route_map"
+        type: "document"
+        format: "markdown"
+        sliceable: true
+        slice_key: "module_name"  # Can extract routes per module
+      - key: "error_standards"
+        type: "document"
+        format: "markdown"
+        sliceable: false  # Error standards apply globally
+      - key: "auth_strategy"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+
+  - phase: 4
+    outputs:
+      - key: "module_code"
+        type: "code"
+        format: "typescript"
+        sliceable: true
+        slice_key: "module_name"  # Each module is in its own directory
+        sub_keys:
+          - "zod_files"       # Zod schema files only
+          - "router_files"    # Router files only
+          - "controller_files" # Controller files only
+
+  - phase: 5
+    outputs:
+      - key: "backend_tests"
+        type: "code"
+        format: "typescript"
+        sliceable: true
+        slice_key: "module_name"
+
+  - phase: 6
+    outputs:
+      - key: "migrations"
+        type: "code"
+        format: "sql"
+        sliceable: false  # Migrations must be considered together
+      - key: "seed_data"
+        type: "code"
+        format: "typescript"
+        sliceable: false
+
+  - phase: 7
+    outputs:
+      - key: "page_inventory"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+      - key: "wireframes"
+        type: "assets"
+        format: "mixed"  # May include images, markdown descriptions
+        sliceable: true
+        slice_key: "page_name"
+      - key: "user_flows"
+        type: "diagram"
+        format: "mermaid"
+        sliceable: false
+      - key: "component_inventory"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+
+  - phase: 8
+    outputs:
+      - key: "style_guide"
+        type: "skill"  # This output becomes a skill document
+        format: "markdown"
+        sliceable: false
+        copies_to: "skills/per-project/STYLE_GUIDE.md"
+
+  - phase: 9
+    outputs:
+      - key: "frontend_api"
+        type: "code"
+        format: "typescript"
+        sliceable: true
+        slice_key: "module_name"
+        sub_keys:
+          - "zod_files"     # Copied Zod schemas
+          - "types"         # Inferred TypeScript types
+          - "hooks"         # React Query hooks
+          - "services"      # Service layer functions
+          - "mock_data"     # Mock data factories
+          - "endpoints"     # Endpoint configuration
+
+  - phase: 10
+    outputs:
+      - key: "page_components"
+        type: "code"
+        format: "typescript"
+        sliceable: true
+        slice_key: "page_name"
+
+  - phase: 11
+    outputs:
+      - key: "frontend_tests"
+        type: "code"
+        format: "typescript"
+        sliceable: true
+        slice_key: "page_name"
+
+  - phase: 12
+    outputs:
+      - key: "e2e_tests"
+        type: "code"
+        format: "typescript"
+        sliceable: false  # E2E tests cover cross-module flows
+
+  - phase: 13
+    outputs:
+      - key: "review_report"
+        type: "document"
+        format: "markdown"
+        sliceable: true
+        slice_key: "checkpoint_name"
+
+  - phase: 14
+    outputs:
+      - key: "readme"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+      - key: "api_docs"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+      - key: "onboarding_guide"
+        type: "document"
+        format: "markdown"
+        sliceable: false
+
+  - phase: 15
+    outputs:
+      - key: "dockerfiles"
+        type: "code"
+        format: "dockerfile"
+        sliceable: false
+      - key: "ci_cd"
+        type: "code"
+        format: "yaml"
+        sliceable: false
+      - key: "env_templates"
+        type: "config"
+        format: "env"
+        sliceable: false
