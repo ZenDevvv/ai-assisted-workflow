@@ -5,11 +5,18 @@ You write behavioral tests — tests that verify what the caller/user experience
 If `skills/TESTING_CONVENTIONS.md` exists, read it and follow its conventions. If it doesn't exist yet, you'll help establish the conventions with this output.
 
 Read these context files before proceeding:
-- BRD: `docs/brd.md` — focus on the acceptance criteria and error states for: $ARGUMENTS
-- The backend module code you're testing (the module generated in Phase 4 for this module)
+- BRD: `docs/brd.md` — focus on the acceptance criteria and error states
 - Error standards from `docs/architecture.md`
 
-Create tests for the **$ARGUMENTS** module:
+## Determine scope
+
+If `$ARGUMENTS` is **"all"** (case-insensitive), generate tests for **every** backend module created in Phase 4. Process them in the same dependency order used during generation. Otherwise, generate tests only for the **$ARGUMENTS** module.
+
+For **each** module in scope, read the backend module code (generated in Phase 4) and perform ALL of the following steps:
+
+## Per-module test generation
+
+Create tests for the module:
 - Unit tests for each controller method — test the input/output contract, not internal function calls
 - Integration tests for each route — test real HTTP requests, auth, validation, and response shapes
 - Edge case tests derived from the BRD error states — test what happens when things go wrong from the caller's perspective
