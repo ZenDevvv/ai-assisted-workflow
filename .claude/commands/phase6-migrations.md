@@ -4,13 +4,46 @@ If `skills/MIGRATION_TEMPLATE.md` exists, read it and follow its conventions for
 
 Read these context files before proceeding:
 - BRD: `docs/brd.md`
-- Architecture: `docs/architecture.md` — data models and ERD
-- Review the finalized backend modules from Phase 4 to ensure migrations match the actual Zod schemas, not just the architecture doc
+- Architecture: `docs/architecture.md` — data models, ERD, and database type
+- Review the finalized backend modules from Phase 4 to ensure output matches the actual Zod schemas, not just the architecture doc
 
-Generate the following:
-- Migration scripts for each model (create table, indexes, foreign keys)
+## Detect database type
+
+Check `docs/architecture.md` (or Prisma schema `datasource` block) to determine the database type.
+
+---
+
+## If SQL database (PostgreSQL, MySQL, etc.)
+
+Generate the following for each model:
+- Migration scripts (create table, indexes, foreign keys) in dependency order
 - Rollback scripts for each migration
 - Seed data scripts with realistic test data
 - Seed data for different environments (dev, staging, test)
 
-📋 REVIEW GATE: Do migrations match the finalized models from Phase 4 (not just Phase 3)? Is seed data realistic enough for meaningful testing?
+📋 REVIEW GATE: Do migrations match the finalized models from Phase 4 (not just Phase 3)? Can migrations run up and down cleanly?
+
+---
+
+## If MongoDB (Prisma + MongoDB)
+
+MongoDB is schemaless — traditional migration scripts are unnecessary. Prisma handles schema via `npx prisma db push`. Instead, focus on **seed data and index management**.
+
+Generate the following:
+- **Prisma seed script** (`prisma/seed.ts`) that creates realistic test data for **all** models in dependency order
+- Seed data per environment (dev, staging, test) with different data volumes:
+  - `dev`: Small dataset (~5–10 records per model) with edge cases
+  - `staging`: Medium dataset (~50–100 records per model) simulating real usage
+  - `test`: Minimal dataset (~2–3 records per model) for fast test runs
+- **Index verification script** — ensure all `@@index()` directives from Prisma schemas are applied
+- **`package.json` seed command**: `"prisma": { "seed": "ts-node prisma/seed.ts" }`
+
+### Seed data rules:
+- Use `prisma.{entity}.createMany()` where possible for performance
+- Respect FK dependencies — seed parent models before children
+- Use realistic data (real-looking names, emails, dates) not "test1", "test2"
+- Include edge cases: empty optional fields, max-length strings, boundary dates
+- Seed data must pass Zod validation — match the schemas from Phase 4 exactly
+- Make seed scripts idempotent — check for existing data or use `deleteMany()` before seeding
+
+📋 REVIEW GATE: Does seed data pass Zod validation for every model? Are FK relationships consistent? Is the data realistic enough for meaningful dev/staging testing?
