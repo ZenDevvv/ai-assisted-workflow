@@ -5,6 +5,12 @@ Read these context files before proceeding:
 - UI Design: `docs/ui-design.md` — the wireframe for this specific page AND the Style Guide section (Section 1) for all styling decisions
 - The frontend API module from Phase 8 — hook signatures, types, mock data factories
 
+## Determine scope
+
+If `$ARGUMENTS` is **"all"** (case-insensitive), generate **every** page listed in the BRD's **Page Manifest** table. Process them in order as they appear in the manifest. Otherwise, generate only the page for **$ARGUMENTS**.
+
+For **each** page in scope, perform ALL of the following steps:
+
 Build the page for **$ARGUMENTS**:
 - Implement the layout matching the wireframe from `docs/ui-design.md`
 - Use Tailwind CSS for styling, following the Style Guide section of `docs/ui-design.md` exactly
