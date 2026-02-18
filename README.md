@@ -22,7 +22,7 @@ You review the output, make corrections, and move to the next phase.
 /phase2-planning
 /phase3-architecture
 /phase4-backend <MODULE_NAME> | all
-/phase5-backend-testing <MODULE_NAME>
+/phase5-backend-testing <MODULE_NAME> | all
 /phase6-migrations
 /phase7-ui-design
 /phase8-style-guide
@@ -152,14 +152,14 @@ Designs data models, ERD, API route map, auth strategy, and error standards. If 
 ### Phase 4 — Backend Module Generation
 
 ```
-/phase4-backend <MODULE_NAME>
+/phase4-backend <MODULE_NAME> | all
 ```
 
-**Example:** `/phase4-backend AUTH` or `/phase4-backend USERS`
+**Example:** `/phase4-backend AUTH` or `/phase4-backend all`
 
 Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (module section), `docs/architecture.md` | Output: module code
 
-Generates Zod schemas, routes, controllers, middleware for one module at a time. Run once per module, starting with the most independent module (no FK dependencies).
+Generates Zod schemas, routes, controllers, middleware. Pass a module name for one module, or `all` to generate every module in dependency order.
 
 **Gate:** ⚠️ VERIFY — Zod schemas become the frontend's source of truth. After the **first** module, run `/phase13-review` before generating more.
 
@@ -168,14 +168,14 @@ Generates Zod schemas, routes, controllers, middleware for one module at a time.
 ### Phase 5 — Backend Testing
 
 ```
-/phase5-backend-testing <MODULE_NAME>
+/phase5-backend-testing <MODULE_NAME> | all
 ```
 
-**Example:** `/phase5-backend-testing AUTH`
+**Example:** `/phase5-backend-testing AUTH` or `/phase5-backend-testing all`
 
 Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4 module code, `docs/architecture.md`
 
-Generates behavioral unit tests, integration tests, and Zod validation tests for one module. If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, this phase creates it.
+Generates behavioral unit tests, integration tests, and Zod validation tests. Pass a module name for one module, or `all` to test every module. If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, this phase creates it.
 
 **Gate:** Run tests. Confirm they pass AND the test quality is good.
 
@@ -189,9 +189,9 @@ Generates behavioral unit tests, integration tests, and Zod validation tests for
 
 Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 modules
 
-Generates migration scripts, rollback scripts, and seed data for all models.
+Auto-detects database type. **SQL:** generates migration scripts, rollback scripts, and seed data. **MongoDB:** skips migrations (Prisma handles schema), generates Prisma seed scripts for all models with per-environment data (dev/staging/test).
 
-**Gate:** Review that migrations match finalized Phase 4 models, not just Phase 3 designs.
+**Gate:** SQL: migrations run up and down cleanly. MongoDB: seed data passes Zod validation, FK relationships are consistent.
 
 ---
 

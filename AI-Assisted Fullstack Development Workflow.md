@@ -264,7 +264,7 @@ TASK: Design the following:
 | **Output** | Zod schemas, routes, controllers, middleware — per module |
 | **Gate** | ✅ MANUAL VERIFICATION |
 
-**Prompt (run per module):**
+**Prompt (run per module, or pass "all" to generate every module in dependency order):**
 ```
 PERSONA: You are a Senior Backend Engineer.
 
@@ -278,12 +278,14 @@ Model Design: {PHASE 3 — relevant model}
 Route Map: {PHASE 3 — relevant routes}
 Error Standards: {PHASE 3 — error standards}
 
-TASK: Generate the backend module for {MODULE_NAME}:
+TASK: Generate the backend module for {MODULE_NAME | all}:
 - Zod validation schemas (create, update, response, query params)
 - Route definitions
 - Controller logic (CRUD + custom operations)
 - Middleware (auth guards, validation)
 - Error handling following the project error standards
+
+If "all", process modules in dependency order — no FK dependencies first.
 ```
 
 **Human Review Focus:** Does the Zod schema match the model exactly? Are all routes from the route map implemented? Are auth guards applied correctly? These Zod schemas become the frontend's source of truth — they must be right.
@@ -300,7 +302,7 @@ TASK: Generate the backend module for {MODULE_NAME}:
 | **Output** | Unit tests, integration tests, validation tests |
 | **Gate** | All tests pass |
 
-**Prompt (run per module):**
+**Prompt (run per module, or pass "all" to test every module):**
 ```
 PERSONA: You are a Senior QA Engineer who writes behavioral tests — tests that
 verify what the caller/user experiences, not how the code is internally implemented.
@@ -315,7 +317,7 @@ BRD: {BRD — relevant requirements and acceptance criteria}
 Module Code: {PHASE 4 — relevant module}
 Error Standards: {PHASE 3 — error standards}
 
-TASK: Create the following tests:
+TASK: Create the following tests for {MODULE_NAME | all}:
 - Unit tests for each controller method — test the input/output contract,
   not internal function calls
 - Integration tests for each route — test real HTTP requests, auth, validation,
@@ -323,6 +325,8 @@ TASK: Create the following tests:
 - Edge case tests derived from the BRD error states — test what happens when
   things go wrong from the caller's perspective
 - Zod schema validation tests — test boundary values, missing fields, wrong types
+
+If "all", process modules in the same dependency order used in Phase 4.
 ```
 
 **Human Review Focus:** Are tests asserting on outcomes (response status, response body, database state) rather than implementation (function was called, mock was invoked with specific args)? Tests coupled to implementation break on every refactor but catch no real bugs.
@@ -335,11 +339,13 @@ TASK: Create the following tests:
 |---|---|
 | **Persona** | Backend Engineer / DBA |
 | **Skill** | `MIGRATION_TEMPLATE.md` — migration file naming, index conventions, seed data format |
-| **Context** | BRD + Phase 3 output (models, ERD) |
-| **Output** | Migration scripts, seed data, rollback scripts |
-| **Gate** | Migrations run cleanly up and down |
+| **Context** | BRD + Phase 3 output (models, ERD) + Phase 4 finalized modules |
+| **Output** | SQL: migration scripts, rollback scripts, seed data. MongoDB: Prisma seed scripts, index verification |
+| **Gate** | SQL: migrations run up and down cleanly. MongoDB: seed data passes Zod validation |
 
-**Prompt:**
+This phase auto-detects database type from the architecture doc or Prisma `datasource` block and adapts accordingly.
+
+**Prompt (SQL databases — PostgreSQL, MySQL, etc.):**
 ```
 PERSONA: You are a Senior Backend Engineer handling database operations.
 
@@ -359,7 +365,24 @@ TASK: Generate the following:
 - Seed data for different environments (dev, staging, test)
 ```
 
-**Human Review Focus:** Do migrations match the finalized models from Phase 4 (not just Phase 3)? Is seed data realistic enough for meaningful testing?
+**Prompt (MongoDB — Prisma + MongoDB):**
+```
+PERSONA: You are a Senior Backend Engineer handling database operations.
+
+CONTEXT:
+BRD: {BRD}
+Data Models: {PHASE 3 — models}
+Phase 4 Modules: {Finalized Zod schemas and Prisma schemas}
+
+TASK: MongoDB is schemaless — skip traditional migrations. Instead:
+- Generate Prisma seed script (prisma/seed.ts) for all models in dependency order
+- Seed data per environment: dev (~5-10 records), staging (~50-100), test (~2-3)
+- Index verification script for all @@index() directives
+- Seed data must pass Zod validation and respect FK relationships
+- Make seed scripts idempotent
+```
+
+**Human Review Focus:** Do migrations/seeds match the finalized models from Phase 4 (not just Phase 3)? Is seed data realistic enough for meaningful testing? For MongoDB: do seeds pass Zod validation?
 
 ---
 
@@ -721,7 +744,7 @@ TASK: Generate the following:
 | 3 | Architecture | Architect | `ARCHITECTURE_STANDARD` | BRD + Phase 2 | Review |
 | 4 | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 | ✅ VERIFY |
 | 5 | Backend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 4 | Tests pass |
-| 6 | DB Migrations | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 | Migrations run |
+| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod |
 | 7 | UI/UX Design | UI Designer | — | BRD + Phase 3 | Review |
 | 8 | Style Guide | UI Designer | — (produces `STYLE_GUIDE`) | BRD + Phase 7 | Review |
 | 9 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4 Zod | ⚠️ Zod match |
