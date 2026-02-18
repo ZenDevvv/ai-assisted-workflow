@@ -15,7 +15,7 @@ Every phase is a slash command. Type `/phase4-backend AUTH` and Claude Code auto
 
 You review the output, make corrections, and move to the next phase.
 
-## Usage
+## Sample Usage
 
 ```
 /phase1-brd <your app concept or user stories>
