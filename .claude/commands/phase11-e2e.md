@@ -15,3 +15,17 @@ Create E2E test suites:
 - Auth flow tests (login, logout, unauthorized access, role-based access)
 
 🧪 TEST GATE: All E2E flows must pass against a running backend. Do E2E tests map to real user journeys? Is the auth flow fully covered?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 11 | E2E Tests | — | ✅ Complete | YYYY-MM-DD | {summary} |`

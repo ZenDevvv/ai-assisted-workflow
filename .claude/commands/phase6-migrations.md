@@ -47,3 +47,17 @@ Generate the following:
 - Make seed scripts idempotent — check for existing data or use `deleteMany()` before seeding
 
 📋 REVIEW GATE: Does seed data pass Zod validation for every model? Are FK relationships consistent? Is the data realistic enough for meaningful dev/staging testing?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 6 | Migrations | — | ✅ Complete | YYYY-MM-DD | {summary} |`

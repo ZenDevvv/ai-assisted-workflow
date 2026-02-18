@@ -15,3 +15,17 @@ Generate the following documentation:
 - **Architecture decision records** — key decisions and rationale
 
 📋 REVIEW GATE: Does the README setup actually work? Do the API doc examples match the actual implementation?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 13 | Documentation | — | ✅ Complete | YYYY-MM-DD | {summary} |`

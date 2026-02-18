@@ -17,7 +17,7 @@ Run them in order. Pass the module or page name as an argument when needed.
 ```
 personas/          — AI persona files (loaded automatically by phase commands)
 skills/            — Skill docs: MODULE_TEMPLATE.md, API_STANDARD.md, BRD_FORMAT.md
-docs/              — Project artifacts (BRD, architecture, designs) — created as you go
+docs/              — Project artifacts (BRD, architecture, designs, progress) — created as you go
 ```
 
 ## Workflow Dependency Map
@@ -47,6 +47,16 @@ The frontend track (8+) starts once both are complete.
 | Style Guide | embedded in `docs/ui-design.md` | Phase 9 (per-project, created in Phase 7) |
 
 Skills marked as pending don't exist yet — they'll be created as you run through projects and refine your conventions.
+
+## Progress Tracking
+
+Each phase appends a row to `docs/progress.md` when it completes. The file is created automatically on first use.
+
+Format: `| Phase | Name | Scope | Status | Date | Notes |`
+
+- Single-run phases (1, 2, 3, 6, 7, 11, 13, 14): one row per run, scope `—`
+- Per-module/page phases (4, 5, 8, 9, 10): one row per module/page
+- Phase 12 (Review): one row per review checkpoint
 
 ## Core Principles
 

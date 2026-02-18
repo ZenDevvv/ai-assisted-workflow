@@ -14,3 +14,17 @@ The build order should follow the independent-first principle: modules with no f
 Save the output to `docs/project-plan.md`.
 
 📋 REVIEW GATE: Are estimates realistic? Is the build order logical? Does the dependency map make sense?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 2 | Planning | — | ✅ Complete | YYYY-MM-DD | {summary} |`

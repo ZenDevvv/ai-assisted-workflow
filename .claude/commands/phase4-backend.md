@@ -32,3 +32,17 @@ Run through the checklist at the bottom of MODULE_TEMPLATE.md before considering
 - Are auth guards applied correctly?
 
 💡 After completing the FIRST module, run `/phase13-review` to catch pattern-level issues before generating more modules.
+
+## Log Progress
+
+After completing each module, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per completed module (fill in today's date and a one-line summary):
+   `| 4 | Backend | {MODULE_NAME} | ✅ Complete | YYYY-MM-DD | {summary} |`

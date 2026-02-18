@@ -20,3 +20,17 @@ Save the output to `docs/architecture.md`.
 If `skills/ARCHITECTURE_STANDARD.md` doesn't exist yet, extract the naming conventions, error response shapes, auth patterns, and API route conventions from your output into a new `skills/ARCHITECTURE_STANDARD.md` for use in future phases and projects.
 
 📋 REVIEW GATE: Do model relationships match the BRD? Is the API surface complete — every feature has routes? Are there missing auth guards? Is the error standard consistent?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 3 | Architecture | — | ✅ Complete | YYYY-MM-DD | {summary} |`

@@ -23,3 +23,17 @@ Review the code for:
 - **API contract:** frontend types still match backend Zod schemas
 
 📋 REVIEW GATE: Prioritize security and performance findings. All critical issues must be resolved before proceeding.
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per review run (fill in checkpoint name and a one-line summary):
+   `| 12 | Code Review | {checkpoint or scope} | ✅ Complete | YYYY-MM-DD | {summary} |`

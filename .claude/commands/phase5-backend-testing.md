@@ -27,3 +27,17 @@ Tests should assert on **outcomes** (response status, response body, database st
 If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, extract the testing patterns, file structure, naming conventions, and coverage rules from your output into a new `skills/TESTING_CONVENTIONS.md`.
 
 🧪 TEST GATE: Run the tests. Confirm they pass AND the test quality is good — passing tests can still be poorly written.
+
+## Log Progress
+
+After completing each module's tests, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per tested module (fill in today's date and a one-line summary):
+   `| 5 | Backend Testing | {MODULE_NAME} | ✅ Complete | YYYY-MM-DD | {summary} |`

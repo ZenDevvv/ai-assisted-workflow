@@ -79,3 +79,17 @@ For each page: loading, empty, error, and populated states.
 2. Do extracted styles match the reference screenshots?
 3. Is every style guide rule specific enough to produce identical results across independently prompted pages?
 4. Are the user flows complete? Are error/empty states accounted for?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 7 | UI Design | — | ✅ Complete | YYYY-MM-DD | {summary} |`

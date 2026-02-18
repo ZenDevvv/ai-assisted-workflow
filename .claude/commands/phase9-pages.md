@@ -21,3 +21,17 @@ Build the page for **$ARGUMENTS**:
 📋 REVIEW GATE: Does the page match the wireframe? Are Tailwind classes and shadcn components consistent with the Style Guide? Do all states render correctly? Compare against previously generated pages for visual consistency.
 
 💡 After completing the FIRST page, run `/phase12-review` to catch pattern-level issues before generating more pages.
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per completed page (fill in today's date and a one-line summary):
+   `| 9 | Pages | {PAGE_NAME} | ✅ Complete | YYYY-MM-DD | {summary} |`

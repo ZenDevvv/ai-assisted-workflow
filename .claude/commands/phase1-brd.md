@@ -33,3 +33,17 @@ Aim for roughly 60% Must-have, 25% Should-have, 15% Nice-to-have.
 Save the output to `docs/brd.md`.
 
 ⚠️ VERIFICATION GATE: This document drives everything downstream. Review every requirement, every acceptance criterion, every error state before proceeding to Phase 2.
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 1 | BRD | — | ✅ Complete | YYYY-MM-DD | {summary} |`

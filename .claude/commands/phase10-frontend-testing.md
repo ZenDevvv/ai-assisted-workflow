@@ -19,3 +19,17 @@ A good test reads like: "when the user clicks submit with an empty name field, t
 A bad test reads like: "expect setError to have been called with {name: 'required'}."
 
 🧪 TEST GATE: Run the tests. Confirm they pass AND the test quality is good.
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per tested page (fill in today's date and a one-line summary):
+   `| 10 | Frontend Testing | {PAGE_NAME} | ✅ Complete | YYYY-MM-DD | {summary} |`

@@ -19,3 +19,17 @@ Using the backend Zod schemas as the single source of truth, generate the fronte
 Run through the Quick Reference Checklist at the bottom of API_STANDARD.md.
 
 📋 REVIEW GATE: Do the copied Zod schemas exactly match the backend? Are mock data factories producing realistic data?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append one row per completed module (fill in today's date and a one-line summary):
+   `| 8 | Frontend API | {MODULE_NAME} | ✅ Complete | YYYY-MM-DD | {summary} |`

@@ -16,3 +16,17 @@ Generate the following:
 - Production deployment checklist
 
 📋 REVIEW GATE: Does Docker Compose work locally? Does the CI/CD pipeline match your actual infrastructure?
+
+## Log Progress
+
+After completing this phase, update `docs/progress.md`:
+
+1. If `docs/progress.md` does not exist, create it with this header:
+   ```
+   # Project Progress
+
+   | Phase | Name | Scope | Status | Date | Notes |
+   |-------|------|-------|--------|------|-------|
+   ```
+2. Append this row (fill in today's date and a one-line summary):
+   `| 14 | Deployment | — | ✅ Complete | YYYY-MM-DD | {summary} |`
