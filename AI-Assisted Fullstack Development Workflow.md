@@ -77,6 +77,7 @@ Common mistakes to explicitly avoid.
 
 | Phase | Skill Doc | Description | Reusable? |
 |---|---|---|---|
+| 1 — Business Requirements | `BRD_FORMAT.md` | BRD structure, module IDs, requirement IDs, Given/When/Then criteria, error states | ✅ Cross-project |
 | 3 — Architecture | `ARCHITECTURE_STANDARD.md` | Naming conventions, error response shape, auth patterns, API route conventions | ✅ Cross-project |
 | 4 — Backend Modules | `MODULE_TEMPLATE.md` | File structure, naming, Zod patterns, controller patterns | ✅ Cross-project |
 | 5 — Backend Testing | `TESTING_CONVENTIONS.md` | Behavioral testing approach — test what the user/caller experiences, not implementation details. File structure, naming, coverage rules | ✅ Cross-project |
@@ -89,7 +90,7 @@ Common mistakes to explicitly avoid.
 | 14 — Documentation | `DOC_TEMPLATES.md` | README structure, API doc format, onboarding guide template | ✅ Cross-project |
 | 15 — Deployment | `INFRA_STANDARD.md` | Dockerfile patterns, CI/CD template, env config conventions | ✅ Cross-project |
 
-**Note:** Phases 1 (Business Requirements), 2 (Project Planning), and 7 (UI Design) do not require skill documents. These phases benefit from persona flexibility — rigid templates would constrain the AI's ability to think broadly about requirements and design. Phase 8 (Style Guide) does not consume a skill but *produces* one.
+**Note:** Phases 2 (Project Planning) and 7 (UI Design) do not require skill documents. These phases benefit from persona flexibility — rigid templates would constrain the AI's ability to think broadly about planning and design. Phase 1 (Business Requirements) uses `BRD_FORMAT.md` to ensure consistent, testable requirement structure. Phase 8 (Style Guide) does not consume a skill but *produces* one.
 
 **Note on Component Library:** This workflow uses Tailwind CSS + shadcn/ui as the design system. This replaces the need for a dedicated shared component library generation phase — the component system already exists. The style guide skill ensures the AI uses it consistently.
 
@@ -156,7 +157,7 @@ When a requirement changes mid-build:
 | | |
 |---|---|
 | **Persona** | Business Analyst |
-| **Skill** | None — persona flexibility preferred |
+| **Skill** | `BRD_FORMAT.md` — BRD structure, module IDs, requirement IDs, Given/When/Then criteria, error states |
 | **Context** | App idea, user stories, stakeholder notes |
 | **Output** | Business Requirements Document (BRD) |
 | **Gate** | ✅ MANUAL VERIFICATION — this is your anchor for everything |
@@ -164,6 +165,10 @@ When a requirement changes mid-build:
 **Prompt:**
 ```
 PERSONA: You are a Senior Business Analyst.
+
+SKILL: Follow the BRD format standard below for document structure, module IDs,
+requirement IDs, acceptance criteria format, and error state documentation.
+{BRD_FORMAT.md}
 
 CONTEXT:
 App Concept: {INPUT}
@@ -711,7 +716,7 @@ TASK: Generate the following:
 
 | # | Phase | Persona | Skill | Context | Gate |
 |---|---|---|---|---|---|
-| 1 | Business Requirements | Business Analyst | — | App idea + user stories | ✅ VERIFY |
+| 1 | Business Requirements | Business Analyst | `BRD_FORMAT` | App idea + user stories | ✅ VERIFY |
 | 2 | Project Planning | Project Manager | — | BRD | Review |
 | 3 | Architecture | Architect | `ARCHITECTURE_STANDARD` | BRD + Phase 2 | Review |
 | 4 | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 | ✅ VERIFY |
