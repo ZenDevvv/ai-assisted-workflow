@@ -21,7 +21,7 @@ You review the output, make corrections, and move to the next phase.
 /phase1-brd <your app concept or user stories>
 /phase2-planning
 /phase3-architecture
-/phase4-backend <MODULE_NAME>
+/phase4-backend <MODULE_NAME> | all
 /phase5-backend-testing <MODULE_NAME>
 /phase6-migrations
 /phase7-ui-design
