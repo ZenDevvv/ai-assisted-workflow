@@ -7,6 +7,7 @@ A 15-phase AI-assisted development workflow powered by Claude Code slash command
 ## How It Works
 
 Every phase is a slash command. Type `/phase4-backend AUTH` and Claude Code automatically:
+
 1. Adopts the Backend Engineer persona
 2. Reads the MODULE_TEMPLATE.md skill doc
 3. Reads your BRD and architecture doc for the AUTH module
@@ -14,13 +15,25 @@ Every phase is a slash command. Type `/phase4-backend AUTH` and Claude Code auto
 
 You review the output, make corrections, and move to the next phase.
 
+Usage
+
 ```
-/phase1-brd "My app concept..."     → generates BRD
-/phase3-architecture                → designs models, routes, auth
-/phase4-backend AUTH                → generates backend module for AUTH
-/phase5-backend-testing AUTH        → generates tests for AUTH
-/phase9-frontend-api AUTH           → generates frontend hooks/services
-/phase10-pages DashboardPage        → generates the dashboard page
+/phase1-brd <your app concept or user stories>
+/phase2-planning
+/phase3-architecture
+/phase4-backend <MODULE_NAME>
+/phase5-backend-testing <MODULE_NAME>
+/phase6-migrations
+/phase7-ui-design
+/phase8-style-guide
+/phase9-frontend-api <MODULE_NAME>
+/phase10-pages <PAGE_NAME>
+/phase11-frontend-testing <MODULE_OR_PAGE_NAME>
+/phase12-e2e
+/phase13-review <optional: what to review>
+/phase14-docs
+/phase15-deployment
+
 ```
 
 ---
@@ -279,6 +292,7 @@ Generates E2E test suites covering user flows, happy paths, error paths, cross-m
 ```
 
 **Examples:**
+
 - `/phase13-review first backend module AUTH`
 - `/phase13-review full backend track`
 - `/phase13-review first frontend page DashboardPage`
@@ -340,13 +354,13 @@ After Phase 3, the backend track and design track can run in parallel (two separ
 
 Run `/phase13-review` at these points — don't wait until the end:
 
-| When | Why |
-|------|-----|
-| After first backend module | Catch pattern-level issues before generating more modules |
-| After backend track (Phases 4-6) | Cross-module consistency, migration correctness |
-| After first frontend page | Catch UI pattern issues before generating more pages |
-| After frontend track (Phases 9-11) | Cross-page consistency, API contract alignment |
-| After E2E (Phase 12) | Final security + performance sweep |
+| When                               | Why                                                       |
+| ---------------------------------- | --------------------------------------------------------- |
+| After first backend module         | Catch pattern-level issues before generating more modules |
+| After backend track (Phases 4-6)   | Cross-module consistency, migration correctness           |
+| After first frontend page          | Catch UI pattern issues before generating more pages      |
+| After frontend track (Phases 9-11) | Cross-page consistency, API contract alignment            |
+| After E2E (Phase 12)               | Final security + performance sweep                        |
 
 ---
 
@@ -354,19 +368,19 @@ Run `/phase13-review` at these points — don't wait until the end:
 
 Skills are reusable reference documents encoding your conventions. They survive across projects and improve over time.
 
-| Skill | Status | Used In |
-|-------|--------|---------|
-| `BRD_FORMAT.md` | ✅ Ready | Phase 1 |
-| `MODULE_TEMPLATE.md` | ✅ Ready | Phase 4 |
-| `API_STANDARD.md` | ✅ Ready | Phase 9 |
-| `ARCHITECTURE_STANDARD.md` | Created by Phase 3 | Phase 3, 4, 13 |
-| `TESTING_CONVENTIONS.md` | Created by Phase 5 | Phase 5, 11 |
-| `STYLE_GUIDE.md` | Created per-project by Phase 8 | Phase 10 |
-| `MIGRATION_TEMPLATE.md` | Add when ready | Phase 6 |
-| `E2E_PATTERNS.md` | Add when ready | Phase 12 |
-| `REVIEW_CHECKLIST.md` | Add when ready | Phase 13 |
-| `DOC_TEMPLATES.md` | Add when ready | Phase 14 |
-| `INFRA_STANDARD.md` | Add when ready | Phase 15 |
+| Skill                      | Status                         | Used In        |
+| -------------------------- | ------------------------------ | -------------- |
+| `BRD_FORMAT.md`            | ✅ Ready                       | Phase 1        |
+| `MODULE_TEMPLATE.md`       | ✅ Ready                       | Phase 4        |
+| `API_STANDARD.md`          | ✅ Ready                       | Phase 9        |
+| `ARCHITECTURE_STANDARD.md` | Created by Phase 3             | Phase 3, 4, 13 |
+| `TESTING_CONVENTIONS.md`   | Created by Phase 5             | Phase 5, 11    |
+| `STYLE_GUIDE.md`           | Created per-project by Phase 8 | Phase 10       |
+| `MIGRATION_TEMPLATE.md`    | Add when ready                 | Phase 6        |
+| `E2E_PATTERNS.md`          | Add when ready                 | Phase 12       |
+| `REVIEW_CHECKLIST.md`      | Add when ready                 | Phase 13       |
+| `DOC_TEMPLATES.md`         | Add when ready                 | Phase 14       |
+| `INFRA_STANDARD.md`        | Add when ready                 | Phase 15       |
 
 Skills you don't have yet won't block you — the phase commands handle missing skills gracefully. After your first project, extract patterns from what worked into new skill docs.
 
