@@ -177,6 +177,9 @@ User Stories: {INPUT}
 TASK: Generate a complete Business Requirements Document:
 - Project overview and objectives
 - User roles and personas
+- User stories for every user-facing interaction (As a / I want to / So that),
+  each mapped to a module and page(s)
+- Page Manifest table derived from user stories (page, stories, route)
 - Functional requirements grouped by module
 - Non-functional requirements (performance, security, scalability)
 - Error states and edge cases for each functional requirement
@@ -340,7 +343,7 @@ If "all", process modules in the same dependency order used in Phase 4.
 | **Persona** | Backend Engineer / DBA |
 | **Skill** | `MIGRATION_TEMPLATE.md` — migration file naming, index conventions, seed data format |
 | **Context** | BRD + Phase 3 output (models, ERD) + Phase 4 finalized modules |
-| **Output** | SQL: migration scripts, rollback scripts, seed data. MongoDB: Prisma seed scripts, index verification |
+| **Output** | SQL: migration scripts, rollback scripts, seed data. MongoDB: Prisma seed scripts |
 | **Gate** | SQL: migrations run up and down cleanly. MongoDB: seed data passes Zod validation |
 
 This phase auto-detects database type from the architecture doc or Prisma `datasource` block and adapts accordingly.
@@ -377,7 +380,7 @@ Phase 4 Modules: {Finalized Zod schemas and Prisma schemas}
 TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 - Generate Prisma seed script (prisma/seed.ts) for all models in dependency order
 - Seed data per environment: dev (~5-10 records), staging (~50-100), test (~2-3)
-- Index verification script for all @@index() directives
+- Do NOT generate an index verification script — prisma db push handles indexes
 - Seed data must pass Zod validation and respect FK relationships
 - Make seed scripts idempotent
 ```
@@ -392,28 +395,34 @@ TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 |---|---|
 | **Persona** | Professional UI Designer |
 | **Skill** | None — persona flexibility preferred for creative design work |
-| **Context** | BRD + Phase 3 output (route map for data shape awareness) |
-| **Output** | Wireframes/mockups, page inventory, component inventory, user flows |
-| **Gate** | Review against BRD requirement coverage |
+| **Context** | BRD (Page Manifest from user stories) + Phase 3 output (route map) + optional reference screenshots + optional design rules |
+| **Output** | Design system summary, wireframes/mockups, component inventory, user flows |
+| **Gate** | Review against Page Manifest — every page must have a wireframe |
+
+**Input:** Optionally pass reference screenshots and/or design rules as arguments. Screenshots are analyzed to extract colors, typography, spacing, and component patterns. Design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
 
 **Prompt:**
 ```
 PERSONA: You are a Professional UI/UX Designer.
 
 CONTEXT:
-BRD: {BRD}
+BRD: {BRD — use the Page Manifest from User Stories as the definitive page list}
 API Surface: {PHASE 3 — route map}
+Reference Screenshots: {OPTIONAL — images to extract visual style from}
+Design Rules: {OPTIONAL — e.g., "mobile first", "dark mode default"}
 
 TASK: Generate the following:
-- Page inventory (all screens needed)
+- Design system summary (color palette, typography, spacing — extracted from
+  screenshots if provided, or sensible defaults)
+- Page inventory pulled from the BRD Page Manifest — do not invent pages
 - Wireframe descriptions or mockups for each page
 - User flow diagrams (mermaid syntax)
 - Component inventory (reusable UI components)
-- Responsive breakpoint strategy
+- Responsive behavior (breakpoints, layout adaptation per breakpoint)
 - State designs for each page: loading, empty, error, populated
 ```
 
-**Human Review Focus:** Does every BRD requirement have a corresponding screen? Are the user flows complete? Are error/empty states accounted for?
+**Human Review Focus:** Does every page in the Page Manifest have a wireframe? If screenshots were provided, do the extracted styles match? Are the user flows complete? Are error/empty states accounted for?
 
 ---
 
@@ -739,13 +748,13 @@ TASK: Generate the following:
 
 | # | Phase | Persona | Skill | Context | Gate |
 |---|---|---|---|---|---|
-| 1 | Business Requirements | Business Analyst | `BRD_FORMAT` | App idea + user stories | ✅ VERIFY |
+| 1 | Business Requirements | Business Analyst | `BRD_FORMAT` | App idea + user stories | ✅ VERIFY (includes User Stories + Page Manifest) |
 | 2 | Project Planning | Project Manager | — | BRD | Review |
 | 3 | Architecture | Architect | `ARCHITECTURE_STANDARD` | BRD + Phase 2 | Review |
 | 4 | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 | ✅ VERIFY |
 | 5 | Backend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 4 | Tests pass |
-| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod |
-| 7 | UI/UX Design | UI Designer | — | BRD + Phase 3 | Review |
+| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod (no index verification) |
+| 7 | UI/UX Design | UI Designer | — | BRD (Page Manifest) + Phase 3 + optional screenshots/rules | Review |
 | 8 | Style Guide | UI Designer | — (produces `STYLE_GUIDE`) | BRD + Phase 7 | Review |
 | 9 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4 Zod | ⚠️ Zod match |
 | 10 | Page Generation | Frontend Engineer | `STYLE_GUIDE` + `COMPONENT_PATTERNS` | BRD + Phase 7, 9 | ⚠️ Renders correctly |

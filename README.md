@@ -24,7 +24,7 @@ You review the output, make corrections, and move to the next phase.
 /phase4-backend <MODULE_NAME> | all
 /phase5-backend-testing <MODULE_NAME> | all
 /phase6-migrations
-/phase7-ui-design
+/phase7-ui-design <optional: screenshot paths and/or design rules>
 /phase8-style-guide
 /phase9-frontend-api <MODULE_NAME>
 /phase10-pages <PAGE_NAME>
@@ -115,7 +115,7 @@ You review the output, make corrections, and move to the next phase.
 
 Persona: Business Analyst | Skill: `BRD_FORMAT` | Output: `docs/brd.md`
 
-Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, and error states. Pass your app idea as text after the command.
+Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, error states, **user stories**, and a **Page Manifest**. User stories map every user-facing interaction to a page — this becomes the source of truth for what Phase 7 designs and Phase 10 builds.
 
 **Gate:** ⚠️ VERIFY — this document drives everything. Invest the most review time here.
 
@@ -189,7 +189,7 @@ Generates behavioral unit tests, integration tests, and Zod validation tests. Pa
 
 Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 modules
 
-Auto-detects database type. **SQL:** generates migration scripts, rollback scripts, and seed data. **MongoDB:** skips migrations (Prisma handles schema), generates Prisma seed scripts for all models with per-environment data (dev/staging/test).
+Auto-detects database type. **SQL:** generates migration scripts, rollback scripts, and seed data. **MongoDB:** skips migrations (Prisma handles schema), generates Prisma seed scripts for all models with per-environment data (dev/staging/test). Does not generate index verification scripts — `prisma db push` handles indexes.
 
 **Gate:** SQL: migrations run up and down cleanly. MongoDB: seed data passes Zod validation, FK relationships are consistent.
 
@@ -198,14 +198,19 @@ Auto-detects database type. **SQL:** generates migration scripts, rollback scrip
 ### Phase 7 — UI/UX Design
 
 ```
-/phase7-ui-design
+/phase7-ui-design <optional: screenshot paths and/or design rules>
 ```
 
-Persona: UI Designer | Skill: — | Reads: `docs/brd.md`, `docs/architecture.md` | Output: `docs/ui-design.md`
+**Examples:**
+- `/phase7-ui-design` — generate designs using defaults
+- `/phase7-ui-design docs/screenshots/reference.png mobile first, dark mode default`
+- `/phase7-ui-design minimal sidebar, dark mode default`
 
-Generates page inventory, wireframes, user flows, component inventory, and state designs (loading, empty, error, populated).
+Persona: UI Designer | Skill: — | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md` | Output: `docs/ui-design.md`
 
-**Gate:** Does every BRD requirement have a corresponding screen?
+Generates design system summary, wireframes, user flows, component inventory, responsive behavior, and state designs. If reference screenshots are provided, extracts colors, typography, spacing, and component patterns from them. Custom design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
+
+**Gate:** Does every page in the Page Manifest have a wireframe? Do extracted styles match the reference screenshots?
 
 ---
 
