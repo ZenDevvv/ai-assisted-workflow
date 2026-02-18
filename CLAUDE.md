@@ -11,13 +11,14 @@ Run them in order. Pass the module or page name as an argument when needed.
 - `/phase1-brd` — generate the BRD from your app concept
 - `/phase4-backend AUTH` — generate the backend module for AUTH
 - `/phase9-pages DashboardPage` — generate the dashboard page
+- `/phase-change "add bulk CSV export to REPORTS — finance team needs it for audits"` — log a requirement change and get an impact report
 
 ## Project Layout
 
 ```
 personas/          — AI persona files (loaded automatically by phase commands)
 skills/            — Skill docs: MODULE_TEMPLATE.md, API_STANDARD.md, BRD_FORMAT.md
-docs/              — Project artifacts (BRD, architecture, designs, progress) — created as you go
+docs/              — Project artifacts (BRD, architecture, designs, progress, changes) — created as you go
 ```
 
 ## Workflow Dependency Map
@@ -47,6 +48,18 @@ The frontend track (8+) starts once both are complete.
 | Style Guide | embedded in `docs/ui-design.md` | Phase 9 (per-project, created in Phase 7) |
 
 Skills marked as pending don't exist yet — they'll be created as you run through projects and refine your conventions.
+
+## Change Management
+
+When requirements change or new features are added mid-project, use `/phase-change` — never edit the BRD directly without logging the change.
+
+`/phase-change` will:
+1. Update `docs/brd.md` (and `docs/architecture.md` if models/routes are affected)
+2. Write a `CHG-NNN` entry to `docs/changes.md` with the reason and full impact
+3. Add a `🔄 Changed` row to `docs/progress.md`
+4. Output an impact report listing exactly which phases need to be re-run
+
+`docs/changes.md` is the audit trail — it records *what* changed, *why*, and *what was affected*.
 
 ## Progress Tracking
 

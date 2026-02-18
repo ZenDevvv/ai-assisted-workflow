@@ -33,6 +33,8 @@ You review the output, make corrections, and move to the next phase.
 /phase13-docs
 /phase14-deployment
 
+# Mid-project requirement changes:
+/phase-change add bulk CSV export to REPORTS — finance team needs it for audits
 ```
 
 ---
@@ -41,8 +43,8 @@ You review the output, make corrections, and move to the next phase.
 
 ```
 ├── CLAUDE.md                       # Auto-loaded by Claude Code — project context
-├── .claude/commands/               # Slash commands for all 14 phases
-│   ├── phase1-brd.md
+├── .claude/commands/               # Slash commands
+│   ├── phase1-brd.md               # BRD generation
 │   ├── phase2-planning.md
 │   ├── phase3-architecture.md
 │   ├── phase4-backend.md
@@ -55,7 +57,8 @@ You review the output, make corrections, and move to the next phase.
 │   ├── phase11-e2e.md
 │   ├── phase12-review.md
 │   ├── phase13-docs.md
-│   └── phase14-deployment.md
+│   ├── phase14-deployment.md
+│   └── phase-change.md             # Log requirement changes & get impact reports
 │
 ├── personas/                       # AI persona files (9 roles)
 │   ├── business-analyst.md
@@ -79,7 +82,9 @@ You review the output, make corrections, and move to the next phase.
 │   ├── brd.md                      # Phase 1 output
 │   ├── project-plan.md             # Phase 2 output
 │   ├── architecture.md             # Phase 3 output
-│   └── ui-design.md                # Phase 7 output (wireframes + style guide combined)
+│   ├── ui-design.md                # Phase 7 output (wireframes + style guide combined)
+│   ├── progress.md                 # Progress log (auto-updated after each phase)
+│   └── changes.md                  # Change audit trail (created by /phase-change)
 │
 └── AI-Assisted Fullstack Development Workflow.md  # Full playbook reference
 ```
@@ -100,6 +105,42 @@ You review the output, make corrections, and move to the next phase.
 3. **Run Phase 1**: type `/phase1-brd` followed by your app concept
 4. **Review the BRD** carefully — it drives everything downstream
 5. **Continue through phases** in order, using the slash commands
+
+---
+
+## Progress Tracking & Changes
+
+Every phase automatically logs its completion to `docs/progress.md`:
+
+```
+| Phase | Name            | Scope       | Status      | Date       | Notes                       |
+|-------|-----------------|-------------|-------------|------------|-----------------------------|
+| 1     | BRD             | —           | ✅ Complete | 2026-02-18 | 5 modules, 32 requirements  |
+| 2     | Planning        | —           | ✅ Complete | 2026-02-18 | 3 sprints, 4 risks flagged  |
+| 4     | Backend         | AUTH        | ✅ Complete | 2026-02-19 | Login, register, JWT        |
+| 4     | Backend         | USERS       | ✅ Complete | 2026-02-19 | CRUD + avatar upload        |
+```
+
+### Handling Mid-Project Changes
+
+When requirements change or new features are added, use `/phase-change`:
+
+```
+/phase-change add bulk CSV export to REPORTS — finance team needs it for audits
+```
+
+This command:
+1. **Updates the BRD** — adds or modifies requirements, never renumbers IDs
+2. **Updates architecture** — if models or routes are affected
+3. **Writes to `docs/changes.md`** — a timestamped change entry with:
+   - What changed
+   - Why (business context)
+   - Which requirements/modules were affected
+   - Exact phases that need re-running
+4. **Logs to progress.md** — a `🔄 Changed` row
+5. **Outputs an impact report** — so you know exactly what to action next
+
+The `docs/changes.md` file is your audit trail — it answers "why does this exist?" months later.
 
 ---
 
