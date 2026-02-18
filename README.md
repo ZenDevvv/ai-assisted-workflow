@@ -94,25 +94,229 @@ You review the output, make corrections, and move to the next phase.
 
 ## The 15 Phases
 
-| # | Phase | Command | Persona | Skill | Per-module? |
-|---|-------|---------|---------|-------|-------------|
-| 1 | Business Requirements | `/phase1-brd` | Business Analyst | `BRD_FORMAT` | No |
-| 2 | Project Planning | `/phase2-planning` | Project Manager | — | No |
-| 3 | Architecture | `/phase3-architecture` | Software Architect | `ARCHITECTURE_STANDARD` | No |
-| 4 | Backend Modules | `/phase4-backend` | Backend Engineer | `MODULE_TEMPLATE` | Yes |
-| 5 | Backend Testing | `/phase5-backend-testing` | QA Engineer | `TESTING_CONVENTIONS` | Yes |
-| 6 | DB Migrations | `/phase6-migrations` | Backend Engineer | `MIGRATION_TEMPLATE` | No |
-| 7 | UI/UX Design | `/phase7-ui-design` | UI Designer | — | No |
-| 8 | Style Guide | `/phase8-style-guide` | UI Designer | — (produces `STYLE_GUIDE`) | No |
-| 9 | Frontend API | `/phase9-frontend-api` | Frontend Engineer | `API_STANDARD` | Yes |
-| 10 | Page Generation | `/phase10-pages` | Frontend Engineer | `STYLE_GUIDE` | Yes |
-| 11 | Frontend Testing | `/phase11-frontend-testing` | QA Engineer | `TESTING_CONVENTIONS` | Yes |
-| 12 | E2E Testing | `/phase12-e2e` | QA Engineer | `E2E_PATTERNS` | No |
-| 13 | Code Review | `/phase13-review` | Software Architect | `REVIEW_CHECKLIST` | No |
-| 14 | Documentation | `/phase14-docs` | Technical Writer | `DOC_TEMPLATES` | No |
-| 15 | Deployment | `/phase15-deployment` | DevOps Engineer | `INFRA_STANDARD` | No |
+### Phase 1 — Business Requirements
 
-**Per-module phases** take a module or page name as argument: `/phase4-backend AUTH`
+```
+/phase1-brd <your app concept or user stories>
+```
+
+Persona: Business Analyst | Skill: `BRD_FORMAT` | Output: `docs/brd.md`
+
+Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, and error states. Pass your app idea as text after the command.
+
+**Gate:** ⚠️ VERIFY — this document drives everything. Invest the most review time here.
+
+---
+
+### Phase 2 — Project Planning & Estimation
+
+```
+/phase2-planning
+```
+
+Persona: Project Manager | Skill: — | Reads: `docs/brd.md` | Output: `docs/project-plan.md`
+
+Generates module breakdown, task estimates, sprint plan, dependency map, and risk register.
+
+**Gate:** Review estimates and build order.
+
+---
+
+### Phase 3 — Architecture & Model Design
+
+```
+/phase3-architecture
+```
+
+Persona: Software Architect | Skill: `ARCHITECTURE_STANDARD` | Reads: `docs/brd.md`, `docs/project-plan.md` | Output: `docs/architecture.md`
+
+Designs data models, ERD, API route map, auth strategy, and error standards. If `skills/ARCHITECTURE_STANDARD.md` doesn't exist yet, this phase creates it.
+
+**Gate:** Review model relationships, API surface completeness, auth guards.
+
+---
+
+### Phase 4 — Backend Module Generation
+
+```
+/phase4-backend <MODULE_NAME>
+```
+
+**Example:** `/phase4-backend AUTH` or `/phase4-backend USERS`
+
+Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (module section), `docs/architecture.md` | Output: module code
+
+Generates Zod schemas, routes, controllers, middleware for one module at a time. Run once per module, starting with the most independent module (no FK dependencies).
+
+**Gate:** ⚠️ VERIFY — Zod schemas become the frontend's source of truth. After the **first** module, run `/phase13-review` before generating more.
+
+---
+
+### Phase 5 — Backend Testing
+
+```
+/phase5-backend-testing <MODULE_NAME>
+```
+
+**Example:** `/phase5-backend-testing AUTH`
+
+Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4 module code, `docs/architecture.md`
+
+Generates behavioral unit tests, integration tests, and Zod validation tests for one module. If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, this phase creates it.
+
+**Gate:** Run tests. Confirm they pass AND the test quality is good.
+
+---
+
+### Phase 6 — Database Migrations & Seed Data
+
+```
+/phase6-migrations
+```
+
+Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 modules
+
+Generates migration scripts, rollback scripts, and seed data for all models.
+
+**Gate:** Review that migrations match finalized Phase 4 models, not just Phase 3 designs.
+
+---
+
+### Phase 7 — UI/UX Design
+
+```
+/phase7-ui-design
+```
+
+Persona: UI Designer | Skill: — | Reads: `docs/brd.md`, `docs/architecture.md` | Output: `docs/ui-design.md`
+
+Generates page inventory, wireframes, user flows, component inventory, and state designs (loading, empty, error, populated).
+
+**Gate:** Does every BRD requirement have a corresponding screen?
+
+---
+
+### Phase 8 — Style Guide
+
+```
+/phase8-style-guide
+```
+
+Persona: UI Designer | Skill: — | Reads: `docs/brd.md`, `docs/ui-design.md` | Output: `skills/STYLE_GUIDE.md`
+
+Extracts a concrete style guide with exact values (hex colors, Tailwind classes, spacing units) from the wireframes. The output becomes a skill document used by Phase 10.
+
+**Gate:** Is every rule specific enough to produce identical results across independently prompted pages? "Use a muted color" is too vague — "use `text-slate-500`" is correct.
+
+---
+
+### Phase 9 — Frontend API Modules
+
+```
+/phase9-frontend-api <MODULE_NAME>
+```
+
+**Example:** `/phase9-frontend-api AUTH`
+
+Persona: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4 Zod schemas, `docs/architecture.md`
+
+Copies Zod schemas from backend, generates TypeScript types, endpoint configs, service layer, React Query hooks, and mock data factories for one module.
+
+**Gate:** Do copied Zod schemas exactly match the backend?
+
+---
+
+### Phase 10 — Page Generation
+
+```
+/phase10-pages <PAGE_NAME>
+```
+
+**Example:** `/phase10-pages DashboardPage` or `/phase10-pages LoginPage`
+
+Persona: Frontend Engineer | Skill: `STYLE_GUIDE` | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (page wireframe), Phase 9 hooks/types
+
+Builds one page at a time using Tailwind + shadcn/ui, following the style guide exactly. Implements all states: loading, empty, error, populated.
+
+**Gate:** Does the page match the design? After the **first** page, run `/phase13-review` before generating more.
+
+---
+
+### Phase 11 — Frontend Testing
+
+```
+/phase11-frontend-testing <MODULE_OR_PAGE_NAME>
+```
+
+**Example:** `/phase11-frontend-testing DashboardPage`
+
+Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 10 page, Phase 9 mock data
+
+Generates behavioral component tests, hook tests, form validation tests, and accessibility tests.
+
+**Gate:** Run tests. Confirm they pass AND the test quality is good.
+
+---
+
+### Phase 12 — Integration & E2E Testing
+
+```
+/phase12-e2e
+```
+
+Persona: QA Engineer | Skill: `E2E_PATTERNS` | Reads: `docs/brd.md`, `docs/architecture.md`, `docs/ui-design.md`
+
+Generates E2E test suites covering user flows, happy paths, error paths, cross-module integration, and auth flows.
+
+**Gate:** All E2E flows pass against a running backend.
+
+---
+
+### Phase 13 — Code Review (Rolling)
+
+```
+/phase13-review <optional: what to review>
+```
+
+**Examples:**
+- `/phase13-review first backend module AUTH`
+- `/phase13-review full backend track`
+- `/phase13-review first frontend page DashboardPage`
+- `/phase13-review` (auto-detects checkpoint based on progress)
+
+Persona: Software Architect | Skill: `REVIEW_CHECKLIST` | Reads: `docs/brd.md`, `docs/architecture.md`, relevant code
+
+Reviews code for security, performance, consistency, missing pieces, and API contract alignment. Run this at checkpoints — not just at the end.
+
+**Gate:** All critical issues resolved before proceeding.
+
+---
+
+### Phase 14 — Documentation
+
+```
+/phase14-docs
+```
+
+Persona: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 Zod schemas
+
+Generates README, API docs, environment variable docs, onboarding guide, and architecture decision records.
+
+**Gate:** Does the README setup actually work? Do API doc examples match reality?
+
+---
+
+### Phase 15 — Deployment Configuration
+
+```
+/phase15-deployment
+```
+
+Persona: DevOps Engineer | Skill: `INFRA_STANDARD` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 14 docs
+
+Generates Dockerfiles, Docker Compose, CI/CD pipeline, env templates, health checks, and production deployment checklist.
+
+**Gate:** Does Docker Compose work locally? Does CI/CD match your infrastructure?
 
 ---
 
