@@ -11,14 +11,16 @@ Defines the structure for the Business Requirements Document (BRD). The BRD is t
 ## 1. Overview
 ## 2. Objectives
 ## 3. User Roles
-## 4. Modules
-### 4.x [MODULE_ID] — [Module Name]
+## 4. User Stories
+### 4.x [US_ID] — [Story Title]
+## 5. Modules
+### 5.x [MODULE_ID] — [Module Name]
 #### Requirements
 ##### [REQ_ID] — [Requirement Title]
 #### Error States
-## 5. Non-Functional Requirements
-## 6. Assumptions & Constraints
-## 7. Out of Scope
+## 6. Non-Functional Requirements
+## 7. Assumptions & Constraints
+## 8. Out of Scope
 ```
 
 ## Rules
@@ -63,6 +65,53 @@ Every requirement must include:
 **Priority:** Must-have | Should-have | Nice-to-have
 ```
 
+### User Stories
+
+User stories describe what users need to accomplish. Each story maps to one or more pages in the UI — this is how Phase 7 (UI Design) and Phase 10 (Pages) know what to build.
+
+#### Story IDs
+
+Every story gets a unique ID: `US-[NNN]`
+
+Examples: `US-001`, `US-002`, `US-003`
+
+Sequential, starting at `001`. Never reuse an ID even if a story is removed.
+
+#### Story Structure
+
+```markdown
+#### US-001 — Register a new account
+
+**As a** visitor,
+**I want to** create an account with my email and password,
+**So that** I can access the platform's features.
+
+**Module:** AUTH
+**Pages:** RegisterPage
+**Priority:** Must-have
+```
+
+- **As a / I want to / So that** — standard user story format. The role must match a role from the User Roles table.
+- **Module** — which module this story belongs to. Must match a Module ID from Section 5.
+- **Pages** — the page(s) this story implies. Comma-separated if multiple. These become the page list for Phase 7 and Phase 10.
+- **Priority** — Must-have / Should-have / Nice-to-have.
+
+#### Deriving Pages from Stories
+
+After writing all stories, collect the unique page names from the **Pages** fields. This becomes your page manifest. Group related stories that share a page:
+
+```markdown
+### Page Manifest (derived from User Stories)
+
+| Page | Stories | Route |
+|------|---------|-------|
+| LoginPage | US-001, US-002 | /login |
+| DashboardPage | US-005, US-006 | /dashboard |
+| UserListPage | US-010 | /admin/users |
+```
+
+This table is the source of truth for Phase 7 (what to design) and Phase 10 (what to build).
+
 ### Acceptance Criteria
 
 Use Given/When/Then format. Each criterion must be independently testable. Minimum 2 per requirement.
@@ -102,6 +151,7 @@ Each module also has a cross-cutting error states table for shared errors (auth 
 - **Overview:** 2–4 sentences. What the app is, who it's for. No implementation details.
 - **Objectives:** 3–7 measurable goals. "Reduce onboarding time by 50%" not "improve UX."
 - **User Roles:** Table with role, description, key permissions.
+- **User Stories:** Every user-facing interaction as a story. These drive page identification in Phase 7 and Phase 10.
 - **Modules:** Core of the BRD. Order by independence — modules with no dependencies first.
 - **Non-Functional Requirements:** Measurable targets (e.g., "API response < 200ms at p95").
 - **Assumptions & Constraints:** Tech choices, business constraints, integration assumptions.
@@ -133,9 +183,51 @@ Aim for roughly 60% Must-have, 25% Should-have, 15% Nice-to-have. If everything 
 | Admin    | Full system access          | Manage users, configure settings          |
 | Member   | Standard authenticated user | Create, read, update own resources        |
 
-## 4. Modules
+## 4. User Stories
 
-### 4.1 AUTH — Authentication & Authorization
+#### US-001 — Register a new account
+
+**As a** visitor,
+**I want to** create an account with my email and password,
+**So that** I can access the platform's features.
+
+**Module:** AUTH
+**Pages:** RegisterPage
+**Priority:** Must-have
+
+#### US-002 — Log in to the platform
+
+**As a** member,
+**I want to** log in with my credentials,
+**So that** I can access my account.
+
+**Module:** AUTH
+**Pages:** LoginPage
+**Priority:** Must-have
+
+#### US-003 — View my dashboard
+
+**As a** member,
+**I want to** see an overview of my activity,
+**So that** I can quickly navigate to what matters.
+
+**Module:** DASHBOARD
+**Pages:** DashboardPage
+**Priority:** Must-have
+
+[Continue for all user-facing interactions...]
+
+### Page Manifest (derived from User Stories)
+
+| Page | Stories | Route |
+|------|---------|-------|
+| RegisterPage | US-001 | /register |
+| LoginPage | US-002 | /login |
+| DashboardPage | US-003 | /dashboard |
+
+## 5. Modules
+
+### 5.1 AUTH — Authentication & Authorization
 
 #### Requirements
 
@@ -163,20 +255,20 @@ A new user can create an account by providing their email, password, and display
 
 ---
 
-### 4.2 [NEXT_MODULE] — [Module Name]
+### 5.2 [NEXT_MODULE] — [Module Name]
 
 [Repeat structure...]
 
-## 5. Non-Functional Requirements
+## 6. Non-Functional Requirements
 
 - **Performance:** API response < 200ms at p95
 - **Security:** All endpoints require authentication except public routes
 
-## 6. Assumptions & Constraints
+## 7. Assumptions & Constraints
 
 - [Assumption or constraint]
 
-## 7. Out of Scope
+## 8. Out of Scope
 
 - [Feature explicitly excluded]
 ```

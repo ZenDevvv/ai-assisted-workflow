@@ -7,6 +7,13 @@ The user will provide their app concept, user stories, or stakeholder notes as i
 Generate a complete Business Requirements Document following the BRD_FORMAT skill exactly:
 - Project overview and objectives
 - User roles and personas (table format)
+- User stories for every user-facing interaction, each with:
+  - Unique story ID (US-NNN format)
+  - As a / I want to / So that format
+  - Module mapping (which module it belongs to)
+  - Page mapping (which page(s) this story implies)
+  - Priority classification
+- Page Manifest table derived from user stories (page name, related stories, route)
 - Functional requirements grouped by module, each with:
   - Unique module ID (uppercase snake_case: AUTH, USERS, PROJECTS, etc.)
   - Unique requirement IDs (MODULE_ID-NNN format)
