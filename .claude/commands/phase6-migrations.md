@@ -35,8 +35,8 @@ Generate the following:
   - `dev`: Small dataset (~5–10 records per model) with edge cases
   - `staging`: Medium dataset (~50–100 records per model) simulating real usage
   - `test`: Minimal dataset (~2–3 records per model) for fast test runs
-- **Index verification script** — ensure all `@@index()` directives from Prisma schemas are applied
 - **`package.json` seed command**: `"prisma": { "seed": "ts-node prisma/seed.ts" }`
+- **Do NOT** generate an index verification script — `prisma db push` already creates indexes defined in the schema
 
 ### Seed data rules:
 - Use `prisma.{entity}.createMany()` where possible for performance
