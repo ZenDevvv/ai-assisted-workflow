@@ -8,6 +8,11 @@ Defines the structure for the Business Requirements Document (BRD). The BRD is t
 
 ```
 # [Project Name] — Business Requirements Document
+## Index
+  - Table of Contents
+  - Module Index
+  - Requirement Index
+  - User Story Index
 ## 1. Overview
 ## 2. Objectives
 ## 3. User Roles
@@ -24,6 +29,67 @@ Defines the structure for the Business Requirements Document (BRD). The BRD is t
 ```
 
 ## Rules
+
+### Index
+
+The BRD must open with an `## Index` section immediately after the document title. This allows fast navigation in long documents without scrolling through hundreds of lines.
+
+The index has four parts:
+
+**1. Table of Contents** — anchor links to every top-level section and each module subsection:
+
+```markdown
+### Table of Contents
+
+- [1. Overview](#1-overview)
+- [2. Objectives](#2-objectives)
+- [3. User Roles](#3-user-roles)
+- [4. User Stories](#4-user-stories)
+  - [Page Manifest](#page-manifest-derived-from-user-stories)
+- [5. Modules](#5-modules)
+  - [5.1 AUTH — Authentication & Authorization](#51-auth--authentication--authorization)
+  - [5.2 USERS — User Management](#52-users--user-management)
+- [6. Non-Functional Requirements](#6-non-functional-requirements)
+- [7. Assumptions & Constraints](#7-assumptions--constraints)
+- [8. Out of Scope](#8-out-of-scope)
+```
+
+**2. Module Index** — one row per module for quick lookup:
+
+```markdown
+### Module Index
+
+| Module ID | Name | Section |
+|-----------|------|---------|
+| AUTH | Authentication & Authorization | [5.1](#51-auth--authentication--authorization) |
+| USERS | User Management | [5.2](#52-users--user-management) |
+```
+
+**3. Requirement Index** — one row per requirement ID, sorted by module:
+
+```markdown
+### Requirement Index
+
+| Req ID | Title | Module | Priority |
+|--------|-------|--------|----------|
+| AUTH-001 | User Registration | AUTH | Must-have |
+| AUTH-002 | User Login | AUTH | Must-have |
+| USERS-001 | View User Profile | USERS | Should-have |
+```
+
+**4. User Story Index** — one row per story ID:
+
+```markdown
+### User Story Index
+
+| Story ID | Title | Module | Pages | Priority |
+|----------|-------|--------|-------|----------|
+| US-001 | Register a new account | AUTH | RegisterPage | Must-have |
+| US-002 | Log in to the platform | AUTH | LoginPage | Must-have |
+| US-003 | View my dashboard | DASHBOARD | DashboardPage | Must-have |
+```
+
+Generate the index **last**, after all sections are written, so IDs and titles are final. The index is read-only reference — it must exactly mirror what is in the document body.
 
 ### Module IDs
 
@@ -166,6 +232,44 @@ Aim for roughly 60% Must-have, 25% Should-have, 15% Nice-to-have. If everything 
 ```markdown
 # [Project Name] — Business Requirements Document
 
+## Index
+
+### Table of Contents
+
+- [1. Overview](#1-overview)
+- [2. Objectives](#2-objectives)
+- [3. User Roles](#3-user-roles)
+- [4. User Stories](#4-user-stories)
+  - [Page Manifest](#page-manifest-derived-from-user-stories)
+- [5. Modules](#5-modules)
+  - [5.1 AUTH — Authentication & Authorization](#51-auth--authentication--authorization)
+  - [5.2 NEXT_MODULE — Module Name](#52-next_module--module-name)
+- [6. Non-Functional Requirements](#6-non-functional-requirements)
+- [7. Assumptions & Constraints](#7-assumptions--constraints)
+- [8. Out of Scope](#8-out-of-scope)
+
+### Module Index
+
+| Module ID | Name | Section |
+|-----------|------|---------|
+| AUTH | Authentication & Authorization | [5.1](#51-auth--authentication--authorization) |
+
+### Requirement Index
+
+| Req ID | Title | Module | Priority |
+|--------|-------|--------|----------|
+| AUTH-001 | User Registration | AUTH | Must-have |
+
+### User Story Index
+
+| Story ID | Title | Module | Pages | Priority |
+|----------|-------|--------|-------|----------|
+| US-001 | Register a new account | AUTH | RegisterPage | Must-have |
+| US-002 | Log in to the platform | AUTH | LoginPage | Must-have |
+| US-003 | View my dashboard | DASHBOARD | DashboardPage | Must-have |
+
+---
+
 ## 1. Overview
 
 [What is this app? Who is it for? What problem does it solve?]
@@ -280,3 +384,4 @@ A new user can create an account by providing their email, password, and display
 3. **Missing error states** — If a requirement can fail, document how. Zero error states almost always means incomplete analysis.
 4. **Everything is Must-have** — If you can't cut anything, you haven't prioritized.
 5. **Cross-module requirements without cross-references** — If deleting a user cascades to projects, note it: "Cross-module impact: see PROJECTS-005."
+6. **Stale index** — The index must mirror the document exactly. If a requirement is added or renamed, update all four index tables. An index that doesn't match the body is worse than no index.
