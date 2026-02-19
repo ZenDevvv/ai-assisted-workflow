@@ -80,6 +80,18 @@ For each page: loading, empty, error, and populated states.
 3. Is every style guide rule specific enough to produce identical results across independently prompted pages?
 4. Are the user flows complete? Are error/empty states accounted for?
 
+## Mark Downstream Phases as Stale
+
+If this phase is being **re-run** (i.e., a row for phase 7 already exists in `docs/progress.md`), scan for any `✅ Complete` rows in `docs/progress.md` for these downstream phases:
+
+- Phase 9 — all pages
+- Phase 10 — all pages
+- Phase 11
+
+For each found row, update the Status cell from `✅ Complete` to `⚠️ Stale` and append to its Notes cell: `| Stale: phase 7 re-run YYYY-MM-DD`
+
+This signals that pages and tests built against the previous style guide or wireframes may no longer match the updated design.
+
 ## Log Progress
 
 After completing this phase, update `docs/progress.md`:

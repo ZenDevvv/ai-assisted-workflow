@@ -34,6 +34,9 @@ You review the output, make corrections, and move to the next phase.
 /phase13-docs
 /phase14-deployment
 
+# Start any new session — re-orients Claude with project state, stale items, and next action:
+/resume
+
 # Mid-project requirement changes:
 /phase-change add bulk CSV export to REPORTS — finance team needs it for audits
 ```
@@ -60,6 +63,7 @@ You review the output, make corrections, and move to the next phase.
 │   ├── phase12-review.md
 │   ├── phase13-docs.md
 │   ├── phase14-deployment.md
+│   └── resume.md                   # Session resume — project state, stale items, next action
 │   └── phase-change.md             # Log requirement changes & get impact reports
 │
 ├── personas/                       # AI persona files (9 roles)
@@ -115,14 +119,22 @@ You review the output, make corrections, and move to the next phase.
 Every phase automatically logs its completion to `docs/progress.md`:
 
 ```
-| Phase | Name            | Scope       | Status      | Date       | Notes                       |
-|-------|-----------------|-------------|-------------|------------|-----------------------------|
-| 1     | BRD             | —           | ✅ Complete | 2026-02-18 | 5 modules, 32 requirements  |
-| 2     | Planning        | —           | ✅ Complete | 2026-02-18 | 3 sprints, 4 risks flagged  |
-| 4a    | DB Schema       | all         | ✅ Complete | 2026-02-19 | 6 models, prisma generate OK|
-| 4b    | Backend Module  | AUTH        | ✅ Complete | 2026-02-19 | Login, register, JWT        |
-| 4b    | Backend Module  | USERS       | ✅ Complete | 2026-02-19 | CRUD + avatar upload        |
+| Phase | Name            | Scope       | Status      | Date       | Notes                            |
+|-------|-----------------|-------------|-------------|------------|----------------------------------|
+| 1     | BRD             | —           | ✅ Complete | 2026-02-18 | 5 modules, 32 requirements       |
+| 2     | Planning        | —           | ✅ Complete | 2026-02-18 | 3 sprints, 4 risks flagged       |
+| 4a    | DB Schema       | all         | ✅ Complete | 2026-02-19 | 6 models, prisma generate OK     |
+| 4b    | Backend Module  | AUTH        | ✅ Complete | 2026-02-19 | Login, register, JWT             |
+| 4b    | Backend Module  | USERS       | ✅ Complete | 2026-02-19 | CRUD + avatar upload             |
+| 5     | Backend Testing | AUTH        | ⚠️ Stale   | 2026-02-19 | Tests OK | Stale: phase 4b AUTH re-run 2026-02-20 |
 ```
+
+**Status values:**
+- `✅ Complete` — phase finished and not invalidated by subsequent changes
+- `⚠️ Stale` — phase was completed but a dependency was re-run or a change was logged that requires re-running this phase
+- `🔄 Changed` — written by `/phase-change` to record a requirement change
+
+Run `/resume` at the start of any session to see a summary of complete, stale, and pending phases — and the exact next command to run.
 
 ### Handling Mid-Project Changes
 

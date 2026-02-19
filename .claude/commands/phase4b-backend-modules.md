@@ -36,6 +36,19 @@ Run through the checklist at the bottom of MODULE_TEMPLATE.md before considering
 
 💡 After completing the FIRST module, run `/phase12-review` to catch pattern-level issues before generating more modules.
 
+## Mark Downstream Phases as Stale
+
+If this module is being **re-run** (i.e., a row for phase 4b `{MODULE_NAME}` already exists in `docs/progress.md`), scan for any `✅ Complete` rows in `docs/progress.md` for these downstream phases and scopes:
+
+- Phase 5 — scope matches `{MODULE_NAME}`
+- Phase 8 — scope matches `{MODULE_NAME}`
+- Phase 9 — any pages listed in the BRD Page Manifest that are served by this module
+- Phase 10 — tests for any pages affected above
+
+For each found row, update the Status cell from `✅ Complete` to `⚠️ Stale` and append to its Notes cell: `| Stale: phase 4b {MODULE_NAME} re-run YYYY-MM-DD`
+
+This signals that tests, frontend API modules, and pages depending on this module's Zod schemas may be out of date.
+
 ## Log Progress
 
 After completing each module, update `docs/progress.md`:

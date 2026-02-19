@@ -29,6 +29,17 @@ Run through the Quick Reference Checklist at the bottom of API_STANDARD.md.
 
 📋 REVIEW GATE: Do the copied Zod schemas exactly match the backend? Are mock data factories producing realistic data?
 
+## Mark Downstream Phases as Stale
+
+If this module is being **re-run** (i.e., a row for phase 8 `{MODULE_NAME}` already exists in `docs/progress.md`), scan for any `✅ Complete` rows in `docs/progress.md` for these downstream phases and scopes:
+
+- Phase 9 — any pages listed in the BRD Page Manifest that use this module's hooks or types
+- Phase 10 — tests for any pages affected above
+
+For each found row, update the Status cell from `✅ Complete` to `⚠️ Stale` and append to its Notes cell: `| Stale: phase 8 {MODULE_NAME} re-run YYYY-MM-DD`
+
+This signals that pages consuming this module's hooks or types may be using outdated contracts.
+
 ## Log Progress
 
 After completing each module, update `docs/progress.md`:

@@ -50,6 +50,19 @@ npx prisma generate
 - Does every model's field list match the architecture doc exactly (no missing fields, no extra fields)?
 - Does every model use `@@map` with the correct plural collection name?
 
+## Mark Downstream Phases as Stale
+
+If this phase is being **re-run** (i.e., a row for phase 4a already exists in `docs/progress.md`), scan for any `✅ Complete` rows in `docs/progress.md` for these downstream phases:
+
+- Phase 4b — all modules
+- Phase 5 — all modules
+- Phase 6
+- Phase 8 — all modules
+
+For each found row, update the Status cell from `✅ Complete` to `⚠️ Stale` and append to its Notes cell: `| Stale: phase 4a re-run YYYY-MM-DD`
+
+This signals that generated code depending on the Prisma schema may be out of date and needs to be regenerated.
+
 ## Log Progress
 
 After all schemas are generated and `prisma generate` succeeds, update `docs/progress.md`:
