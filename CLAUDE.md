@@ -4,12 +4,13 @@ This project uses a 14-phase AI-assisted development workflow. The full playbook
 
 ## How to Use
 
-Each phase has a slash command: `/phase1-brd`, `/phase4-backend`, `/phase9-pages`, etc.
+Each phase has a slash command: `/phase1-brd`, `/phase4a-db-schema`, `/phase4b-backend-modules`, `/phase9-pages`, etc.
 Run them in order. Pass the module or page name as an argument when needed.
 
 **Examples:**
 - `/phase1-brd` — generate the BRD from your app concept
-- `/phase4-backend AUTH` — generate the backend module for AUTH
+- `/phase4a-db-schema all` — generate all Prisma models and run prisma generate
+- `/phase4b-backend-modules AUTH` — generate the backend module for AUTH
 - `/phase9-pages DashboardPage` — generate the dashboard page
 - `/phase-change "add bulk CSV export to REPORTS — finance team needs it for audits"` — log a requirement change and get an impact report
 
@@ -27,13 +28,13 @@ docs/              — Project artifacts (BRD, architecture, designs, progress, 
 Phase 1 — BRD ✅ VERIFY
   └── Phase 2 — Planning
         └── Phase 3 — Architecture
-              ├── Phase 4 → 5 → 6  (Backend track)
-              └── Phase 7           (Design track — UI design + style guide)
+              ├── Phase 4a → 4b → 5 → 6  (Backend track)
+              └── Phase 7                 (Design track — UI design + style guide)
                     ↘
               Phase 8 → 9 → 10 → 11 → 12 → 13 → 14  (Frontend + Finalization)
 ```
 
-After Phase 3, the backend track (4→5→6) and design track (7) can run in parallel.
+After Phase 3, the backend track (4a→4b→5→6) and design track (7) can run in parallel.
 The frontend track (8+) starts once both are complete.
 
 ## Skills (Reference Docs)
@@ -41,9 +42,9 @@ The frontend track (8+) starts once both are complete.
 | Skill | File | Used In |
 |-------|------|---------|
 | BRD Format | `skills/BRD_FORMAT.md` | Phase 1 |
-| Module Template | `skills/MODULE_TEMPLATE.md` | Phase 4 |
+| Module Template | `skills/MODULE_TEMPLATE.md` | Phase 4a (Step 1), Phase 4b |
 | API Standard | `skills/API_STANDARD.md` | Phase 8 |
-| Architecture Standard | `skills/ARCHITECTURE_STANDARD.md` | Phase 3, 4, 12 |
+| Architecture Standard | `skills/ARCHITECTURE_STANDARD.md` | Phase 3, 4a, 4b, 12 |
 | Testing Conventions | `skills/TESTING_CONVENTIONS.md` | Phase 5, 10 |
 | Style Guide | embedded in `docs/ui-design.md` | Phase 9 (per-project, created in Phase 7) |
 
@@ -67,8 +68,8 @@ Each phase appends a row to `docs/progress.md` when it completes. The file is cr
 
 Format: `| Phase | Name | Scope | Status | Date | Notes |`
 
-- Single-run phases (1, 2, 3, 6, 7, 11, 13, 14): one row per run, scope `—`
-- Per-module/page phases (4, 5, 8, 9, 10): one row per module/page
+- Single-run phases (1, 2, 3, 4a, 6, 7, 11, 13, 14): one row per run, scope `—` (4a may list model count)
+- Per-module/page phases (4b, 5, 8, 9, 10): one row per module/page
 - Phase 12 (Review): one row per review checkpoint
 
 ## Core Principles

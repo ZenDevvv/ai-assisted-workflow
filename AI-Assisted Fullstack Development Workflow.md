@@ -52,7 +52,7 @@ Most phases consume skills, but some phases *produce* skill documents that later
 
 | Producer Phase | Skill Produced | Consumer Phases |
 |---|---|---|
-| Phase 3 — Architecture | `ARCHITECTURE_STANDARD.md` (if not already cross-project) | Phases 4, 5, 6, 12 |
+| Phase 3 — Architecture | `ARCHITECTURE_STANDARD.md` (if not already cross-project) | Phases 4a, 4b, 5, 6, 12 |
 | Phase 7 — UI/UX Design | `STYLE_GUIDE.md` (per-project) | Phase 9 |
 | First run of Phase 5 | `TESTING_CONVENTIONS.md` (if not already cross-project) | Phases 5, 10, 11 |
 
@@ -79,7 +79,8 @@ Common mistakes to explicitly avoid.
 |---|---|---|---|
 | 1 — Business Requirements | `BRD_FORMAT.md` | BRD structure, module IDs, requirement IDs, Given/When/Then criteria, error states | ✅ Cross-project |
 | 3 — Architecture | `ARCHITECTURE_STANDARD.md` | Naming conventions, error response shape, auth patterns, API route conventions | ✅ Cross-project |
-| 4 — Backend Modules | `MODULE_TEMPLATE.md` | File structure, naming, Zod patterns, controller patterns | ✅ Cross-project |
+| 4a — DB Schema | `MODULE_TEMPLATE.md` (Step 1 only) | Prisma model structure, standard fields, relation patterns, @@map conventions | ✅ Cross-project |
+| 4b — Backend Modules | `MODULE_TEMPLATE.md` | File structure, naming, Zod patterns, controller patterns | ✅ Cross-project |
 | 5 — Backend Testing | `TESTING_CONVENTIONS.md` | Behavioral testing approach — test what the user/caller experiences, not implementation details. File structure, naming, coverage rules | ✅ Cross-project |
 | 6 — Migrations | `MIGRATION_TEMPLATE.md` | Migration file naming, index conventions, seed data format | ✅ Cross-project |
 | 8 — Frontend Modules | `API_STANDARD.md` | Zod copy rules, hook patterns, service layer structure, endpoint config | ✅ Cross-project |
@@ -122,12 +123,13 @@ Note if this is a recurring issue to address in the prompt template.
 PHASE 1 — Business Requirements ✅ VERIFY
   └── PHASE 2 — Project Planning & Estimation
         └── PHASE 3 — Architecture & Model Design
-              ├── PHASE 4 — Backend Module Generation ✅ VERIFY
-              │     ├── PHASE 5 — Backend Testing
-              │     └── PHASE 6 — DB Migrations & Seed Data
+              ├── PHASE 4a — DB Schema (all Prisma models + prisma generate)
+              │     └── PHASE 4b — Backend Module Generation ✅ VERIFY
+              │           ├── PHASE 5 — Backend Testing
+              │           └── PHASE 6 — DB Migrations & Seed Data
               │
               └── PHASE 7 — UI/UX Design & Style Guide (→ docs/ui-design.md)
-                          └── PHASE 8 — Frontend API Modules (copies Zod from Phase 4)
+                          └── PHASE 8 — Frontend API Modules (copies Zod from Phase 4b)
                                 └── PHASE 9 — Page Generation (uses ui-design.md + Phase 8 hooks)
                                       └── PHASE 10 — Frontend Testing
                                             └── PHASE 11 — Integration & E2E Testing
@@ -136,7 +138,9 @@ PHASE 1 — Business Requirements ✅ VERIFY
                                                               └── PHASE 14 — Deployment Config
 ```
 
-**Parallel tracks:** Once Phase 3 is verified, the backend track (Phases 4–6) and the design track (Phase 7) can proceed in parallel. The frontend track (Phases 8+) begins once both Phase 4 and Phase 7 are complete.
+**Parallel tracks:** Once Phase 3 is verified, the backend track (Phases 4a→4b→5→6) and the design track (Phase 7) can proceed in parallel. The frontend track (Phases 8+) begins once both Phase 4b and Phase 7 are complete.
+
+**Why 4a before 4b:** Phase 4a finalizes all Prisma models and their relations in one pass, allowing cross-model consistency to be reviewed before any module code is written. Phase 4b generates controllers, routes, and Zod schemas against the stable, already-generated Prisma client.
 
 ---
 
@@ -256,41 +260,86 @@ TASK: Design the following:
 
 ---
 
-## PHASE 4 — Backend Module Generation
+## PHASE 4a — DB Schema
+
+| | |
+|---|---|
+| **Persona** | Backend Engineer |
+| **Skill** | `MODULE_TEMPLATE.md` — Step 1 (Prisma Schema) and Naming Conventions only |
+| **Context** | Phase 3 output (data models, ERD, field types, relationships) |
+| **Output** | `prisma/schema/[entity].prisma` files for all models + `npx prisma generate` |
+| **Gate** | All FK references resolve, relations consistent on both sides, `prisma generate` succeeds |
+
+Run with `all` to process every model in dependency order, or pass a single model name.
+
+**Prompt:**
+```
+PERSONA: You are a Senior Backend Engineer.
+
+SKILL: Follow Step 1 (Prisma Schema) and the Naming Conventions table in MODULE_TEMPLATE.md.
+{MODULE_TEMPLATE.md — Step 1 + Naming Conventions}
+
+CONTEXT:
+Data Models: {PHASE 3 — all models with field types and constraints}
+ERD: {PHASE 3 — entity relationship diagram}
+
+TASK: Generate Prisma schema files for {MODEL_NAME | all}:
+- One file per model at prisma/schema/[entity].prisma
+- Standard fields: id (ObjectId), entity fields, isDeleted, createdBy?, updatedBy?, createdAt, updatedAt
+- All relations from the ERD: FK ID fields (@db.ObjectId) + named relation fields, both sides
+- @@index([orgId]) where applicable, @@map("plural_collection_name")
+- Process in dependency order — models with no FK dependencies first
+
+After all files are written, run: npx prisma generate
+
+Verify before generating:
+- All FK references point to existing models
+- Every relation is defined on both sides
+- Field list matches the architecture doc exactly
+```
+
+**Human Review Focus:** Are all cross-model relations correct and consistent? Does every model's field list match the architecture exactly? Fix issues here before Phase 4b — changing a Prisma model after modules are scaffolded means updating Zod schemas and controller types too.
+
+---
+
+## PHASE 4b — Backend Module Generation
 
 | | |
 |---|---|
 | **Persona** | Backend Engineer |
 | **Skill** | `MODULE_TEMPLATE.md` — file structure, naming, Zod patterns, controller patterns |
-| **Context** | BRD + Phase 3 output (models, route map, error standards) |
+| **Context** | BRD + Phase 3 output (route map, error standards) + Phase 4a generated Prisma client |
 | **Output** | Zod schemas, routes, controllers, middleware — per module |
 | **Gate** | ✅ MANUAL VERIFICATION |
+
+**Prerequisite:** Phase 4a must be complete and `npx prisma generate` must have succeeded.
 
 **Prompt (run per module, or pass "all" to generate every module in dependency order):**
 ```
 PERSONA: You are a Senior Backend Engineer.
 
 SKILL: Follow the module template below for file structure, naming conventions,
-Zod schema patterns, and controller patterns.
+Zod schema patterns, and controller patterns. Skip Step 1 — Prisma schemas
+are already generated by Phase 4a.
 {MODULE_TEMPLATE.md}
 
 CONTEXT:
 BRD: {BRD}
-Model Design: {PHASE 3 — relevant model}
 Route Map: {PHASE 3 — relevant routes}
 Error Standards: {PHASE 3 — error standards}
+Prisma Models: {PHASE 4a — relevant .prisma file}
 
 TASK: Generate the backend module for {MODULE_NAME | all}:
-- Zod validation schemas (create, update, response, query params)
+- Zod validation schemas (create, update, response, query params) — match Phase 4a model exactly
 - Route definitions
 - Controller logic (CRUD + custom operations)
 - Middleware (auth guards, validation)
 - Error handling following the project error standards
 
-If "all", process modules in dependency order — no FK dependencies first.
+If "all", process modules in the same dependency order used in Phase 4a.
 ```
 
-**Human Review Focus:** Does the Zod schema match the model exactly? Are all routes from the route map implemented? Are auth guards applied correctly? These Zod schemas become the frontend's source of truth — they must be right.
+**Human Review Focus:** Does the Zod schema match the Phase 4a Prisma model exactly? Are all routes from the route map implemented? Are auth guards applied correctly? These Zod schemas become the frontend's source of truth — they must be right.
 
 ---
 
@@ -316,7 +365,7 @@ and outcomes, not implementation details.
 
 CONTEXT:
 BRD: {BRD — relevant requirements and acceptance criteria}
-Module Code: {PHASE 4 — relevant module}
+Module Code: {PHASE 4b — relevant module}
 Error Standards: {PHASE 3 — error standards}
 
 TASK: Create the following tests for {MODULE_NAME | all}:
@@ -374,7 +423,8 @@ PERSONA: You are a Senior Backend Engineer handling database operations.
 CONTEXT:
 BRD: {BRD}
 Data Models: {PHASE 3 — models}
-Phase 4 Modules: {Finalized Zod schemas and Prisma schemas}
+Phase 4a Prisma Schemas: {prisma/schema/*.prisma files}
+Phase 4b Modules: {Finalized Zod schemas}
 
 TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 - Generate Prisma seed script (prisma/seed.ts) for all models in dependency order
@@ -461,7 +511,7 @@ service layer structure, and endpoint configuration.
 
 CONTEXT:
 BRD: {BRD}
-Backend Zod Schemas: {PHASE 4 — zod files}
+Backend Zod Schemas: {PHASE 4b — zod files}
 API Route Map: {PHASE 3 — routes}
 
 TASK: Using the backend Zod schemas as the single source of truth:
@@ -608,8 +658,8 @@ TASK: Create the following E2E tests:
 
 | Checkpoint | What to review | Why |
 |---|---|---|
-| After first backend module (Phase 4, first module) | Controller patterns, auth guards, error handling, Zod structure | Catches template-level issues before you generate more modules with the same patterns |
-| After backend track complete (Phases 4–6) | Cross-module consistency, migration correctness, query patterns | Catches N+1 queries, missing indexes, inconsistent error handling across modules |
+| After first backend module (Phase 4b, first module) | Controller patterns, auth guards, error handling, Zod structure | Catches template-level issues before you generate more modules with the same patterns |
+| After backend track complete (Phases 4a–6) | Cross-module consistency, migration correctness, query patterns | Catches N+1 queries, missing indexes, inconsistent error handling across modules |
 | After first frontend page (Phase 9, first page) | Component structure, style guide adherence, hook usage patterns | Same logic — catch pattern issues before generating more pages |
 | After frontend track complete (Phases 8–10) | Cross-page consistency, API contract alignment, state management | Catches drift between frontend types and backend Zod schemas |
 | Final sweep (after Phase 11) | Full security review, performance review, everything together | Final gate before documentation and deployment |
@@ -718,16 +768,17 @@ TASK: Generate the following:
 | 1 | Business Requirements | Business Analyst | `BRD_FORMAT` | App idea + user stories | ✅ VERIFY (includes User Stories + Page Manifest) |
 | 2 | Project Planning | Project Manager | — | BRD | Review |
 | 3 | Architecture | Architect | `ARCHITECTURE_STANDARD` | BRD + Phase 2 | Review |
-| 4 | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 | ✅ VERIFY |
-| 5 | Backend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 4 | Tests pass |
-| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4 | SQL: migrations run / MongoDB: seeds pass Zod |
+| 4a | DB Schema | Backend Engineer | `MODULE_TEMPLATE` (Step 1) | Phase 3 models + ERD | `prisma generate` succeeds |
+| 4b | Backend Modules | Backend Engineer | `MODULE_TEMPLATE` | BRD + Phase 3 routes + Phase 4a client | ✅ VERIFY |
+| 5 | Backend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 4b | Tests pass |
+| 6 | DB Migrations/Seeds | Backend Engineer | `MIGRATION_TEMPLATE` | BRD + Phase 3 + Phase 4a + Phase 4b | SQL: migrations run / MongoDB: seeds pass Zod |
 | 7 | UI/UX Design & Style Guide | UI Designer | — (produces `docs/ui-design.md`) | BRD (Page Manifest) + Phase 3 + optional screenshots/rules | Review |
-| 8 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4 Zod | ⚠️ Zod match |
+| 8 | Frontend API Modules | Frontend Engineer | `API_STANDARD` | BRD + Phase 4b Zod | ⚠️ Zod match |
 | 9 | Page Generation | Frontend Engineer | `docs/ui-design.md` Style Guide section | BRD + Phase 7, 8 | ⚠️ Renders correctly |
 | 10 | Frontend Testing | QA Engineer | `TESTING_CONVENTIONS` | BRD + Phase 8, 9 | Tests pass |
 | 11 | E2E Testing | QA Engineer | `E2E_PATTERNS` | BRD + Phase 3, 7 | ⚠️ All flows pass |
 | 12 | Code Review | Architect | `REVIEW_CHECKLIST` | BRD + Phase 3 + code | ⚠️ Issues resolved |
-| 13 | Documentation | Technical Writer | `DOC_TEMPLATES` | BRD + Phase 3, 4 | Docs match code |
+| 13 | Documentation | Technical Writer | `DOC_TEMPLATES` | BRD + Phase 3, 4b | Docs match code |
 | 14 | Deployment Config | DevOps Engineer | `INFRA_STANDARD` | BRD + Phase 3, 13 | Deploy succeeds |
 
 ⚠️ = Multi-source context — assemble inputs from multiple phases before prompting.
@@ -738,7 +789,7 @@ TASK: Generate the following:
 
 ```
 Phase 3 complete
-  ├── Backend Track: Phase 4 → 5 → 6
+  ├── Backend Track: Phase 4a → 4b → 5 → 6
   └── Design Track:  Phase 7
                           ↘
          Both tracks complete → Phase 8 → 9 → 10 → 11 → 12 → 13 → 14

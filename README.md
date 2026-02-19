@@ -1,12 +1,12 @@
 # AI-Assisted Fullstack Development Workflow
 
-A 14-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right persona, skill documents, and context — no manual copy-pasting.
+A 15-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right persona, skill documents, and context — no manual copy-pasting.
 
 ---
 
 ## How It Works
 
-Every phase is a slash command. Type `/phase4-backend AUTH` and Claude Code automatically:
+Every phase is a slash command. Type `/phase4b-backend-modules AUTH` and Claude Code automatically:
 
 1. Adopts the Backend Engineer persona
 2. Reads the MODULE_TEMPLATE.md skill doc
@@ -21,7 +21,8 @@ You review the output, make corrections, and move to the next phase.
 /phase1-brd <your app concept or user stories>
 /phase2-planning
 /phase3-architecture
-/phase4-backend <MODULE_NAME> | all
+/phase4a-db-schema all
+/phase4b-backend-modules <MODULE_NAME> | all
 /phase5-backend-testing <MODULE_NAME> | all
 /phase6-migrations
 /phase7-ui-design <optional: screenshot paths and/or design rules>
@@ -47,7 +48,8 @@ You review the output, make corrections, and move to the next phase.
 │   ├── phase1-brd.md               # BRD generation
 │   ├── phase2-planning.md
 │   ├── phase3-architecture.md
-│   ├── phase4-backend.md
+│   ├── phase4a-db-schema.md        # Prisma models + prisma generate
+│   ├── phase4b-backend-modules.md  # Zod schemas, routes, controllers
 │   ├── phase5-backend-testing.md
 │   ├── phase6-migrations.md
 │   ├── phase7-ui-design.md
@@ -117,8 +119,9 @@ Every phase automatically logs its completion to `docs/progress.md`:
 |-------|-----------------|-------------|-------------|------------|-----------------------------|
 | 1     | BRD             | —           | ✅ Complete | 2026-02-18 | 5 modules, 32 requirements  |
 | 2     | Planning        | —           | ✅ Complete | 2026-02-18 | 3 sprints, 4 risks flagged  |
-| 4     | Backend         | AUTH        | ✅ Complete | 2026-02-19 | Login, register, JWT        |
-| 4     | Backend         | USERS       | ✅ Complete | 2026-02-19 | CRUD + avatar upload        |
+| 4a    | DB Schema       | all         | ✅ Complete | 2026-02-19 | 6 models, prisma generate OK|
+| 4b    | Backend Module  | AUTH        | ✅ Complete | 2026-02-19 | Login, register, JWT        |
+| 4b    | Backend Module  | USERS       | ✅ Complete | 2026-02-19 | CRUD + avatar upload        |
 ```
 
 ### Handling Mid-Project Changes
@@ -144,7 +147,7 @@ The `docs/changes.md` file is your audit trail — it answers "why does this exi
 
 ---
 
-## The 14 Phases
+## The 15 Phases
 
 ### Phase 1 — Business Requirements
 
@@ -188,17 +191,33 @@ Designs data models, ERD, API route map, auth strategy, and error standards. If 
 
 ---
 
-### Phase 4 — Backend Module Generation
+### Phase 4a — DB Schema
 
 ```
-/phase4-backend <MODULE_NAME> | all
+/phase4a-db-schema all | <MODEL_NAME>
 ```
 
-**Example:** `/phase4-backend AUTH` or `/phase4-backend all`
+**Example:** `/phase4a-db-schema all` or `/phase4a-db-schema User`
+
+Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` (Step 1) | Reads: `docs/architecture.md` (data models + ERD) | Output: `prisma/schema/[entity].prisma` files
+
+Generates all Prisma schema files from the architecture doc's data models, defines all relations, and runs `npx prisma generate`. Run with `all` to process every model in dependency order.
+
+**Gate:** All FK references resolve, relations are consistent on both sides, `prisma generate` succeeds.
+
+---
+
+### Phase 4b — Backend Module Generation
+
+```
+/phase4b-backend-modules <MODULE_NAME> | all
+```
+
+**Example:** `/phase4b-backend-modules AUTH` or `/phase4b-backend-modules all`
 
 Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (module section), `docs/architecture.md` | Output: module code
 
-Generates Zod schemas, routes, controllers, middleware. Pass a module name for one module, or `all` to generate every module in dependency order.
+Requires Phase 4a to be complete. Generates Zod schemas, routes, controllers, and middleware — using the already-generated Prisma client. Pass a module name for one module, or `all` to generate every module in dependency order.
 
 **Gate:** ⚠️ VERIFY — Zod schemas become the frontend's source of truth. After the **first** module, run `/phase12-review` before generating more.
 
@@ -212,7 +231,7 @@ Generates Zod schemas, routes, controllers, middleware. Pass a module name for o
 
 **Example:** `/phase5-backend-testing AUTH` or `/phase5-backend-testing all`
 
-Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4 module code, `docs/architecture.md`
+Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4b module code, `docs/architecture.md`
 
 Generates behavioral unit tests, integration tests, and Zod validation tests. Pass a module name for one module, or `all` to test every module. If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, this phase creates it.
 
@@ -226,7 +245,7 @@ Generates behavioral unit tests, integration tests, and Zod validation tests. Pa
 /phase6-migrations
 ```
 
-Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 modules
+Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4a schemas, Phase 4b modules
 
 Auto-detects database type. **SQL:** generates migration scripts, rollback scripts, and seed data. **MongoDB:** skips migrations (Prisma handles schema), generates Prisma seed scripts for all models with per-environment data (dev/staging/test). Does not generate index verification scripts — `prisma db push` handles indexes.
 
@@ -261,7 +280,7 @@ Generates everything in a single file: the Style Guide (exact Tailwind classes, 
 
 **Example:** `/phase8-frontend-api AUTH`
 
-Persona: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4 Zod schemas, `docs/architecture.md`
+Persona: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4b Zod schemas, `docs/architecture.md`
 
 Copies Zod schemas from backend, generates TypeScript types, endpoint configs, service layer, React Query hooks, and mock data factories for one module.
 
@@ -342,7 +361,7 @@ Reviews code for security, performance, consistency, missing pieces, and API con
 /phase13-docs
 ```
 
-Persona: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4 Zod schemas
+Persona: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4b Zod schemas
 
 Generates README, API docs, environment variable docs, onboarding guide, and architecture decision records.
 
@@ -370,13 +389,15 @@ Generates Dockerfiles, Docker Compose, CI/CD pipeline, env templates, health che
 Phase 1 — BRD (VERIFY)
   └── Phase 2 — Planning
         └── Phase 3 — Architecture
-              ├── Backend Track:  Phase 4 → 5 → 6    (can run in parallel)
-              └── Design Track:   Phase 7              (can run in parallel)
+              ├── Backend Track:  Phase 4a → 4b → 5 → 6    (can run in parallel with Phase 7)
+              └── Design Track:   Phase 7
                                         ↘
               Both tracks complete → Phase 8 → 9 → 10 → 11 → 12 → 13 → 14
 ```
 
 After Phase 3, the backend track and design track can run in parallel (two separate Claude Code sessions).
+
+**Backend track order:** Phase 4a generates all Prisma models first → Phase 4b generates modules one by one against the stable schema.
 
 ---
 
@@ -384,13 +405,13 @@ After Phase 3, the backend track and design track can run in parallel (two separ
 
 Run `/phase12-review` at these points — don't wait until the end:
 
-| When                               | Why                                                       |
-| ---------------------------------- | --------------------------------------------------------- |
-| After first backend module         | Catch pattern-level issues before generating more modules |
-| After backend track (Phases 4-6)   | Cross-module consistency, migration correctness           |
-| After first frontend page          | Catch UI pattern issues before generating more pages      |
-| After frontend track (Phases 8-10) | Cross-page consistency, API contract alignment            |
-| After E2E (Phase 11)               | Final security + performance sweep                        |
+| When                                | Why                                                       |
+| ----------------------------------- | --------------------------------------------------------- |
+| After first backend module (4b)     | Catch pattern-level issues before generating more modules |
+| After backend track (Phases 4a-6)   | Cross-module consistency, migration correctness           |
+| After first frontend page           | Catch UI pattern issues before generating more pages      |
+| After frontend track (Phases 8-10)  | Cross-page consistency, API contract alignment            |
+| After E2E (Phase 11)                | Final security + performance sweep                        |
 
 ---
 
@@ -398,19 +419,19 @@ Run `/phase12-review` at these points — don't wait until the end:
 
 Skills are reusable reference documents encoding your conventions. They survive across projects and improve over time.
 
-| Skill                      | Status                         | Used In        |
-| -------------------------- | ------------------------------ | -------------- |
-| `BRD_FORMAT.md`            | ✅ Ready                       | Phase 1        |
-| `MODULE_TEMPLATE.md`       | ✅ Ready                       | Phase 4        |
-| `API_STANDARD.md`          | ✅ Ready                       | Phase 8        |
-| `ARCHITECTURE_STANDARD.md` | Created by Phase 3             | Phase 3, 4, 12 |
-| `TESTING_CONVENTIONS.md`   | Created by Phase 5             | Phase 5, 10    |
-| Style Guide (in `ui-design.md`) | Created per-project by Phase 7 | Phase 9     |
-| `MIGRATION_TEMPLATE.md`    | Add when ready                 | Phase 6        |
-| `E2E_PATTERNS.md`          | Add when ready                 | Phase 11       |
-| `REVIEW_CHECKLIST.md`      | Add when ready                 | Phase 12       |
-| `DOC_TEMPLATES.md`         | Add when ready                 | Phase 13       |
-| `INFRA_STANDARD.md`        | Add when ready                 | Phase 14       |
+| Skill                      | Status                         | Used In           |
+| -------------------------- | ------------------------------ | ----------------- |
+| `BRD_FORMAT.md`            | ✅ Ready                       | Phase 1           |
+| `MODULE_TEMPLATE.md`       | ✅ Ready                       | Phase 4a, 4b      |
+| `API_STANDARD.md`          | ✅ Ready                       | Phase 8           |
+| `ARCHITECTURE_STANDARD.md` | Created by Phase 3             | Phase 3, 4a, 4b, 12 |
+| `TESTING_CONVENTIONS.md`   | Created by Phase 5             | Phase 5, 10       |
+| Style Guide (in `ui-design.md`) | Created per-project by Phase 7 | Phase 9      |
+| `MIGRATION_TEMPLATE.md`    | Add when ready                 | Phase 6           |
+| `E2E_PATTERNS.md`          | Add when ready                 | Phase 11          |
+| `REVIEW_CHECKLIST.md`      | Add when ready                 | Phase 12          |
+| `DOC_TEMPLATES.md`         | Add when ready                 | Phase 13          |
+| `INFRA_STANDARD.md`        | Add when ready                 | Phase 14          |
 
 Skills you don't have yet won't block you — the phase commands handle missing skills gracefully. After your first project, extract patterns from what worked into new skill docs.
 
