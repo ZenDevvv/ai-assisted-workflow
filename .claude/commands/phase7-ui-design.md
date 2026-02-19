@@ -4,13 +4,11 @@ Read these context files before proceeding:
 - BRD: `docs/brd.md` — use the **Page Manifest** (from User Stories) as the definitive page list
 - Architecture: `docs/architecture.md` — route map for data shape awareness
 
-## Input: $ARGUMENTS
+## Design Reference Images
 
-The arguments may include:
-- **Screenshot paths** — reference images to extract visual style from (colors, spacing, typography, component patterns, layout structure). Read each image file provided.
-- **Design rules** — custom directives like "mobile first", "dark mode default", "minimal sidebar", etc.
+Before proceeding, check `docs/design-references/` for any image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`). Read every image found there.
 
-If screenshots are provided, analyze them and extract:
+If images are found, analyze them and extract:
 - Color palette (primary, secondary, accent, background, surface, text colors)
 - Typography (font families, sizes, weights, line heights)
 - Spacing system (padding, margins, gaps)
@@ -18,11 +16,17 @@ If screenshots are provided, analyze them and extract:
 - Component styles (buttons, inputs, cards, tables, navigation)
 - Layout patterns (sidebar, top nav, grid system)
 
-Apply these extracted styles consistently across all page designs. If screenshots conflict with each other, prefer the most common pattern.
+Apply these extracted styles consistently across all page designs. If images conflict with each other, prefer the most common pattern.
 
-**IMPORTANT:** Only extract **visual style** from screenshots (colors, typography, spacing, layout patterns, component styling). Do NOT extract or imitate features, functionality, or content from the screenshots. The BRD is the sole source of truth for what the app does — screenshots are only a style reference.
+**IMPORTANT:** Only extract **visual style** from reference images (colors, typography, spacing, layout patterns, component styling). Do NOT extract or imitate features, functionality, or content from the images. The BRD is the sole source of truth for what the app does — images are only a style reference.
 
-If design rules are provided, treat them as hard constraints that override defaults.
+If no images are found in `docs/design-references/`, fall back to sensible defaults.
+
+## Input: $ARGUMENTS
+
+`$ARGUMENTS` contains **design rules only** — custom directives like `"mobile first"`, `"dark mode default"`, `"minimal sidebar"`, etc.
+
+If design rules are provided, treat them as hard constraints that override both extracted image styles and defaults.
 
 ---
 
@@ -33,7 +37,7 @@ Save everything below into a single file. Downstream phases (pages, E2E, review)
 ### 1. Style Guide
 The code-ready style system. Every rule must include **exact values** — no vague descriptions. The project uses Tailwind CSS and shadcn/ui.
 
-Extracted from screenshots (if provided) or derived from design rules and sensible defaults:
+Extracted from `docs/design-references/` images (if present) or derived from design rules and sensible defaults:
 
 - **Color palette** — exact hex values for primary, secondary, accent, background, surface, text colors, mapped to Tailwind classes
 - **Typography scale** — font families, exact sizes, weights, line heights — with Tailwind classes
@@ -76,7 +80,7 @@ For each page: loading, empty, error, and populated states.
 
 📋 REVIEW GATE:
 1. Does every page in the Page Manifest have a wireframe?
-2. Do extracted styles match the reference screenshots?
+2. Do extracted styles match the images in `docs/design-references/` (if any were provided)?
 3. Is every style guide rule specific enough to produce identical results across independently prompted pages?
 4. Are the user flows complete? Are error/empty states accounted for?
 

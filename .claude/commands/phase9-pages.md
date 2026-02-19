@@ -4,6 +4,7 @@ Read these context files before proceeding:
 - BRD: `docs/brd.md` — focus on the relevant module requirements for: $ARGUMENTS
 - UI Design: `docs/ui-design.md` — the wireframe for this specific page AND the Style Guide section (Section 1) for all styling decisions
 - The frontend API module from Phase 8 — hook signatures, types, mock data factories
+- Design references: check `docs/design-references/` for any image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`) and read them. Use these as a visual consistency check when implementing the page — the generated UI should reflect the same visual style extracted from these images in Phase 7.
 
 ## Determine scope
 

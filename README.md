@@ -25,7 +25,7 @@ You review the output, make corrections, and move to the next phase.
 /phase4b-backend-modules <MODULE_NAME> | all
 /phase5-backend-testing <MODULE_NAME> | all
 /phase6-migrations
-/phase7-ui-design <optional: screenshot paths and/or design rules>
+/phase7-ui-design <optional: design rules>
 /phase8-frontend-api <MODULE_NAME>
 /phase9-pages <PAGE_NAME>
 /phase10-frontend-testing <MODULE_OR_PAGE_NAME>
@@ -89,6 +89,7 @@ You review the output, make corrections, and move to the next phase.
 │   ├── project-plan.md             # Phase 2 output
 │   ├── architecture.md             # Phase 3 output
 │   ├── ui-design.md                # Phase 7 output (wireframes + style guide combined)
+│   ├── design-references/          # Drop reference images here before running Phase 7
 │   ├── progress.md                 # Progress log (auto-updated after each phase)
 │   └── changes.md                  # Change audit trail (created by /phase-change)
 │
@@ -268,17 +269,19 @@ Auto-detects database type. **SQL:** generates migration scripts, rollback scrip
 ### Phase 7 — UI/UX Design & Style Guide
 
 ```
-/phase7-ui-design <optional: screenshot paths and/or design rules>
+/phase7-ui-design <optional: design rules>
 ```
 
 **Examples:**
 - `/phase7-ui-design` — generate designs using defaults
-- `/phase7-ui-design docs/screenshots/reference.png mobile first, dark mode default`
-- `/phase7-ui-design minimal sidebar, dark mode default`
+- `/phase7-ui-design mobile first, dark mode default`
+- `/phase7-ui-design minimal sidebar`
 
-Persona: UI Designer | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md` | Output: `docs/ui-design.md`
+**Before running:** drop any reference images (`.png`, `.jpg`, `.webp`, etc.) into `docs/design-references/`. Phase 7 reads them automatically.
 
-Generates everything in a single file: the Style Guide (exact Tailwind classes, shadcn variants, hex colors), wireframes, user flows, component inventory, responsive behavior, and state designs. If reference screenshots are provided, extracts colors, typography, spacing, and component patterns from them — visual style only, never features. Custom design rules (e.g., "mobile first", "dark mode default") are applied as hard constraints.
+Persona: UI Designer | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md`, `docs/design-references/` | Output: `docs/ui-design.md`
+
+Generates everything in a single file: the Style Guide (exact Tailwind classes, shadcn variants, hex colors), wireframes, user flows, component inventory, responsive behavior, and state designs. Automatically reads any images in `docs/design-references/` and extracts colors, typography, spacing, and component patterns — visual style only, never features. Custom design rules (e.g., "mobile first", "dark mode default") override extracted styles. Phase 9 also reads `docs/design-references/` as a visual consistency check when generating pages.
 
 **Gate:** Does every page in the Page Manifest have a wireframe? Is every style guide rule specific enough to produce identical results across independently prompted pages?
 
@@ -308,9 +311,9 @@ Copies Zod schemas from backend, generates TypeScript types, endpoint configs, s
 
 **Example:** `/phase9-pages DashboardPage` or `/phase9-pages LoginPage`
 
-Persona: Frontend Engineer | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (wireframe + style guide), Phase 8 hooks/types
+Persona: Frontend Engineer | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (wireframe + style guide), `docs/design-references/`, Phase 8 hooks/types
 
-Builds one page at a time using Tailwind + shadcn/ui, following the style guide exactly. Implements all states: loading, empty, error, populated.
+Builds one page at a time using Tailwind + shadcn/ui, following the style guide exactly. Reads `docs/design-references/` images as a visual consistency check. Implements all states: loading, empty, error, populated.
 
 **Gate:** Does the page match the design? After the **first** page, run `/phase12-review` before generating more.
 
