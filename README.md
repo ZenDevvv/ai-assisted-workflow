@@ -1,4 +1,6 @@
-# AI-Assisted Fullstack Development Workflow
+# ~~AI-Assisted Fullstack Development Workflow~~ (Deprecated)
+
+> **This project is deprecated.** The active and maintained version has moved to [ZenDevvv/ai-dev-orchestrator](https://github.com/ZenDevvv/ai-dev-orchestrator).
 
 A 15-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right agent, skill documents, and context — no manual copy-pasting.
 
@@ -13,7 +15,7 @@ Every phase is a slash command. Type `/phase4b-backend-modules AUTH` and Claude 
 3. Reads your BRD and architecture doc for the AUTH module
 4. Generates the module code
 
-You review the output, make corrections, and move to the next phase.
+You review the output, mak2e corrections, and move to the next phase.
 
 ## Sample Usage
 
