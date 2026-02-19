@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/backend-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/backend-engineer.md`. Read it now before proceeding.
 
 Read the skill doc at `skills/MODULE_TEMPLATE.md` — refer to **Step 1 (Prisma Schema)** and the **Naming Conventions** table only. Read it now before proceeding.
 

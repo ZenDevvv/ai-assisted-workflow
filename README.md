@@ -1,6 +1,6 @@
 # AI-Assisted Fullstack Development Workflow
 
-A 15-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right persona, skill documents, and context — no manual copy-pasting.
+A 15-phase AI-assisted development workflow powered by Claude Code slash commands. Each phase automatically loads the right agent, skill documents, and context — no manual copy-pasting.
 
 ---
 
@@ -8,7 +8,7 @@ A 15-phase AI-assisted development workflow powered by Claude Code slash command
 
 Every phase is a slash command. Type `/phase4b-backend-modules AUTH` and Claude Code automatically:
 
-1. Adopts the Backend Engineer persona
+1. Adopts the Backend Engineer agent
 2. Reads the MODULE_TEMPLATE.md skill doc
 3. Reads your BRD and architecture doc for the AUTH module
 4. Generates the module code
@@ -66,7 +66,7 @@ You review the output, make corrections, and move to the next phase.
 │   └── resume.md                   # Session resume — project state, stale items, next action
 │   └── phase-change.md             # Log requirement changes & get impact reports
 │
-├── personas/                       # AI persona files (9 roles)
+├── agents/                       # AI agent files (9 roles)
 │   ├── business-analyst.md
 │   ├── project-manager.md
 │   ├── software-architect.md
@@ -168,7 +168,7 @@ The `docs/changes.md` file is your audit trail — it answers "why does this exi
 /phase1-brd <your app concept or user stories>
 ```
 
-Persona: Business Analyst | Skill: `BRD_FORMAT` | Output: `docs/brd.md`
+Agent: Business Analyst | Skill: `BRD_FORMAT` | Output: `docs/brd.md`
 
 Generates a complete BRD with module IDs, requirement IDs, Given/When/Then acceptance criteria, error states, **user stories**, and a **Page Manifest**. User stories map every user-facing interaction to a page — this becomes the source of truth for what Phase 7 designs and Phase 9 builds.
 
@@ -182,7 +182,7 @@ Generates a complete BRD with module IDs, requirement IDs, Given/When/Then accep
 /phase2-planning
 ```
 
-Persona: Project Manager | Skill: — | Reads: `docs/brd.md` | Output: `docs/project-plan.md`
+Agent: Project Manager | Skill: — | Reads: `docs/brd.md` | Output: `docs/project-plan.md`
 
 Generates module breakdown, task estimates, sprint plan, dependency map, and risk register.
 
@@ -196,7 +196,7 @@ Generates module breakdown, task estimates, sprint plan, dependency map, and ris
 /phase3-architecture
 ```
 
-Persona: Software Architect | Skill: `ARCHITECTURE_STANDARD` | Reads: `docs/brd.md`, `docs/project-plan.md` | Output: `docs/architecture.md`
+Agent: Software Architect | Skill: `ARCHITECTURE_STANDARD` | Reads: `docs/brd.md`, `docs/project-plan.md` | Output: `docs/architecture.md`
 
 Designs data models, ERD, API route map, auth strategy, and error standards. If `skills/ARCHITECTURE_STANDARD.md` doesn't exist yet, this phase creates it.
 
@@ -212,7 +212,7 @@ Designs data models, ERD, API route map, auth strategy, and error standards. If 
 
 **Example:** `/phase4a-db-schema all` or `/phase4a-db-schema User`
 
-Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` (Step 1) | Reads: `docs/architecture.md` (data models + ERD) | Output: `prisma/schema/[entity].prisma` files
+Agent: Backend Engineer | Skill: `MODULE_TEMPLATE` (Step 1) | Reads: `docs/architecture.md` (data models + ERD) | Output: `prisma/schema/[entity].prisma` files
 
 Generates all Prisma schema files from the architecture doc's data models, defines all relations, and runs `npx prisma generate`. Run with `all` to process every model in dependency order.
 
@@ -228,7 +228,7 @@ Generates all Prisma schema files from the architecture doc's data models, defin
 
 **Example:** `/phase4b-backend-modules AUTH` or `/phase4b-backend-modules all`
 
-Persona: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (module section), `docs/architecture.md` | Output: module code
+Agent: Backend Engineer | Skill: `MODULE_TEMPLATE` | Reads: `docs/brd.md` (module section), `docs/architecture.md` | Output: module code
 
 Requires Phase 4a to be complete. Generates Zod schemas, routes, controllers, and middleware — using the already-generated Prisma client. Pass a module name for one module, or `all` to generate every module in dependency order.
 
@@ -244,7 +244,7 @@ Requires Phase 4a to be complete. Generates Zod schemas, routes, controllers, an
 
 **Example:** `/phase5-backend-testing AUTH` or `/phase5-backend-testing all`
 
-Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4b module code, `docs/architecture.md`
+Agent: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 4b module code, `docs/architecture.md`
 
 Generates behavioral unit tests, integration tests, and Zod validation tests. Pass a module name for one module, or `all` to test every module. If `skills/TESTING_CONVENTIONS.md` doesn't exist yet, this phase creates it.
 
@@ -258,7 +258,7 @@ Generates behavioral unit tests, integration tests, and Zod validation tests. Pa
 /phase6-migrations
 ```
 
-Persona: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4a schemas, Phase 4b modules
+Agent: Backend Engineer | Skill: `MIGRATION_TEMPLATE` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4a schemas, Phase 4b modules
 
 Auto-detects database type. **SQL:** generates migration scripts, rollback scripts, and seed data. **MongoDB:** skips migrations (Prisma handles schema), generates Prisma seed scripts for all models with per-environment data (dev/staging/test). Does not generate index verification scripts — `prisma db push` handles indexes.
 
@@ -279,7 +279,7 @@ Auto-detects database type. **SQL:** generates migration scripts, rollback scrip
 
 **Before running:** drop any reference images (`.png`, `.jpg`, `.webp`, etc.) into `docs/design-references/`. Phase 7 reads them automatically.
 
-Persona: UI Designer | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md`, `docs/design-references/` | Output: `docs/ui-design.md`
+Agent: UI Designer | Reads: `docs/brd.md` (Page Manifest from user stories), `docs/architecture.md`, `docs/design-references/` | Output: `docs/ui-design.md`
 
 Generates everything in a single file: the Style Guide (exact Tailwind classes, shadcn variants, hex colors), wireframes, user flows, component inventory, responsive behavior, and state designs. Automatically reads any images in `docs/design-references/` and extracts colors, typography, spacing, and component patterns — visual style only, never features. Custom design rules (e.g., "mobile first", "dark mode default") override extracted styles. Phase 9 also reads `docs/design-references/` as a visual consistency check when generating pages.
 
@@ -295,7 +295,7 @@ Generates everything in a single file: the Style Guide (exact Tailwind classes, 
 
 **Example:** `/phase8-frontend-api AUTH`
 
-Persona: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4b Zod schemas, `docs/architecture.md`
+Agent: Frontend Engineer | Skill: `API_STANDARD` | Reads: `docs/brd.md` (module section), Phase 4b Zod schemas, `docs/architecture.md`
 
 Copies Zod schemas from backend, generates TypeScript types, endpoint configs, service layer, React Query hooks, and mock data factories for one module.
 
@@ -311,7 +311,7 @@ Copies Zod schemas from backend, generates TypeScript types, endpoint configs, s
 
 **Example:** `/phase9-pages DashboardPage` or `/phase9-pages LoginPage`
 
-Persona: Frontend Engineer | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (wireframe + style guide), `docs/design-references/`, Phase 8 hooks/types
+Agent: Frontend Engineer | Reads: `docs/brd.md` (module section), `docs/ui-design.md` (wireframe + style guide), `docs/design-references/`, Phase 8 hooks/types
 
 Builds one page at a time using Tailwind + shadcn/ui, following the style guide exactly. Reads `docs/design-references/` images as a visual consistency check. Implements all states: loading, empty, error, populated.
 
@@ -327,7 +327,7 @@ Builds one page at a time using Tailwind + shadcn/ui, following the style guide 
 
 **Example:** `/phase10-frontend-testing DashboardPage`
 
-Persona: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 9 page, Phase 8 mock data
+Agent: QA Engineer | Skill: `TESTING_CONVENTIONS` | Reads: `docs/brd.md` (acceptance criteria), Phase 9 page, Phase 8 mock data
 
 Generates behavioral component tests, hook tests, form validation tests, and accessibility tests.
 
@@ -341,7 +341,7 @@ Generates behavioral component tests, hook tests, form validation tests, and acc
 /phase11-e2e
 ```
 
-Persona: QA Engineer | Skill: `E2E_PATTERNS` | Reads: `docs/brd.md`, `docs/architecture.md`, `docs/ui-design.md`
+Agent: QA Engineer | Skill: `E2E_PATTERNS` | Reads: `docs/brd.md`, `docs/architecture.md`, `docs/ui-design.md`
 
 Generates E2E test suites covering user flows, happy paths, error paths, cross-module integration, and auth flows.
 
@@ -362,7 +362,7 @@ Generates E2E test suites covering user flows, happy paths, error paths, cross-m
 - `/phase12-review first frontend page DashboardPage`
 - `/phase12-review` (auto-detects checkpoint based on progress)
 
-Persona: Software Architect | Skill: `REVIEW_CHECKLIST` | Reads: `docs/brd.md`, `docs/architecture.md`, relevant code
+Agent: Software Architect | Skill: `REVIEW_CHECKLIST` | Reads: `docs/brd.md`, `docs/architecture.md`, relevant code
 
 Reviews code for security, performance, consistency, missing pieces, and API contract alignment. Run this at checkpoints — not just at the end.
 
@@ -376,7 +376,7 @@ Reviews code for security, performance, consistency, missing pieces, and API con
 /phase13-docs
 ```
 
-Persona: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4b Zod schemas
+Agent: Technical Writer | Skill: `DOC_TEMPLATES` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 4b Zod schemas
 
 Generates README, API docs, environment variable docs, onboarding guide, and architecture decision records.
 
@@ -390,7 +390,7 @@ Generates README, API docs, environment variable docs, onboarding guide, and arc
 /phase14-deployment
 ```
 
-Persona: DevOps Engineer | Skill: `INFRA_STANDARD` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 13 docs
+Agent: DevOps Engineer | Skill: `INFRA_STANDARD` | Reads: `docs/brd.md`, `docs/architecture.md`, Phase 13 docs
 
 Generates Dockerfiles, Docker Compose, CI/CD pipeline, env templates, health checks, and production deployment checklist.
 
@@ -456,6 +456,6 @@ Skills you don't have yet won't block you — the phase commands handle missing 
 
 **Add a skill:** Create a `.md` file in `skills/` (Purpose → Rules → Templates → Examples → Anti-patterns). The relevant phase command will pick it up automatically.
 
-**Add a persona:** Create a `.md` file in `personas/` (Identity → Perspective → Priorities → What You Produce → What You Do Not Do).
+**Add a agent:** Create a `.md` file in `agents/` (Identity → Perspective → Priorities → What You Produce → What You Do Not Do).
 
 **Refine over time:** When you correct the AI's output, note what you changed. If the same correction happens twice, add a rule to the relevant skill doc.

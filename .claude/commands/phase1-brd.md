@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/business-analyst.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/business-analyst.md`. Read it now before proceeding.
 
 Follow the BRD format standard defined in `skills/BRD_FORMAT.md`. Read it now before proceeding.
 
@@ -6,7 +6,7 @@ The user will provide their app concept, user stories, or stakeholder notes as i
 
 Generate a complete Business Requirements Document following the BRD_FORMAT skill exactly:
 - Project overview and objectives
-- User roles and personas (table format)
+- User roles and agents (table format)
 - User stories for every user-facing interaction, each with:
   - Unique story ID (US-NNN format)
   - As a / I want to / So that format

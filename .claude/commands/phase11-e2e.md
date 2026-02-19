@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/qa-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/qa-engineer.md`. Read it now before proceeding.
 
 If `skills/E2E_PATTERNS.md` exists, read it and follow its conventions for selector strategy, fixture structure, and flow test patterns.
 

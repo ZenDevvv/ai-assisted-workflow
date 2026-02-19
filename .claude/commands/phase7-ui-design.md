@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/ui-designer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/ui-designer.md`. Read it now before proceeding.
 
 Read these context files before proceeding:
 - BRD: `docs/brd.md` — use the **Page Manifest** (from User Stories) as the definitive page list

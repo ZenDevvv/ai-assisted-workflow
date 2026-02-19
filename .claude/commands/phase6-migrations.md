@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/backend-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/backend-engineer.md`. Read it now before proceeding.
 
 If `skills/MIGRATION_TEMPLATE.md` exists, read it and follow its conventions for migration file naming, index conventions, and seed data format.
 

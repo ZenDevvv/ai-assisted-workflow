@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/devops-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/devops-engineer.md`. Read it now before proceeding.
 
 If `skills/INFRA_STANDARD.md` exists, read it and follow its conventions for Dockerfile patterns, CI/CD pipeline structure, and environment configuration.
 

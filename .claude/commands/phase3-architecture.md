@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/software-architect.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/software-architect.md`. Read it now before proceeding.
 
 If `skills/ARCHITECTURE_STANDARD.md` exists, read it and follow its conventions. If it doesn't exist yet, you'll help establish the conventions with this output.
 

@@ -17,7 +17,7 @@ Run them in order. Pass the module or page name as an argument when needed.
 ## Project Layout
 
 ```
-personas/          — AI persona files (loaded automatically by phase commands)
+agents/          — AI agent files (loaded automatically by phase commands)
 skills/            — Skill docs: MODULE_TEMPLATE.md, API_STANDARD.md, BRD_FORMAT.md
 docs/              — Project artifacts (BRD, architecture, designs, progress, changes) — created as you go
 ```

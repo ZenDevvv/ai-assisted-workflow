@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/technical-writer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/technical-writer.md`. Read it now before proceeding.
 
 If `skills/DOC_TEMPLATES.md` exists, read it and follow its conventions for README structure, API doc format, and onboarding guide layout.
 

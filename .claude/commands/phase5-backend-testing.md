@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/qa-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/qa-engineer.md`. Read it now before proceeding.
 
 You write behavioral tests — tests that verify what the caller/user experiences, not how the code is internally implemented.
 

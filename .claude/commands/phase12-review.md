@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/software-architect.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/software-architect.md`. Read it now before proceeding.
 
 If `skills/REVIEW_CHECKLIST.md` exists, read it and follow its security, performance, and consistency checks.
 

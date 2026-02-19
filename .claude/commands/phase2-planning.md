@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/project-manager.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/project-manager.md`. Read it now before proceeding.
 
 Read the BRD at `docs/brd.md` — this is your primary input.
 

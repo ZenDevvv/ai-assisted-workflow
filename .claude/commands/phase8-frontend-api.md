@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/frontend-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/frontend-engineer.md`. Read it now before proceeding.
 
 Read the skill doc at `skills/API_STANDARD.md` — follow it exactly for Zod copy rules, hook patterns, service layer structure, and endpoint configuration. Read it now before proceeding.
 

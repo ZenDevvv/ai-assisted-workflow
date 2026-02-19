@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/business-analyst.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/business-analyst.md`. Read it now before proceeding.
 
 Read these context files before proceeding:
 - BRD: `docs/brd.md` — current requirements, module IDs, requirement IDs, user stories

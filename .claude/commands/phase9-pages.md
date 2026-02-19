@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/frontend-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/frontend-engineer.md`. Read it now before proceeding.
 
 Read these context files before proceeding:
 - BRD: `docs/brd.md` — focus on the relevant module requirements for: $ARGUMENTS

@@ -17,15 +17,15 @@
 Every prompt is assembled from four components:
 
 ```
-PERSONA  — Who the AI is (shapes thinking, priorities, judgment)
+AGENT  — Who the AI is (shapes thinking, priorities, judgment)
 SKILL    — How to execute (rules, patterns, templates, conventions)
 CONTEXT  — What to work with (BRD + previous phase outputs, human-reviewed)
 TASK     — What to produce
 ```
 
-**Persona** controls the AI's perspective and decision-making lens. A Business Analyst prioritizes requirements coverage. An Architect thinks about scalability and relationships.
+**Agent** controls the AI's perspective and decision-making lens. A Business Analyst prioritizes requirements coverage. An Architect thinks about scalability and relationships.
 
-**Skill** is a reference document of concrete rules, patterns, and templates the persona must follow when producing output. Your `MODULE_TEMPLATE_MD` and `API_STANDARD` are skills. Skills are reusable across projects and improve over time through Decision Log feedback.
+**Skill** is a reference document of concrete rules, patterns, and templates the agent must follow when producing output. Your `MODULE_TEMPLATE_MD` and `API_STANDARD` are skills. Skills are reusable across projects and improve over time through Decision Log feedback.
 
 **Context** is always anchored by the BRD. Most phases only need BRD + the immediate prior output. Some later phases require multi-source context — these are flagged below with ⚠️.
 
@@ -91,7 +91,7 @@ Common mistakes to explicitly avoid.
 | 13 — Documentation | `DOC_TEMPLATES.md` | README structure, API doc format, onboarding guide template | ✅ Cross-project |
 | 14 — Deployment | `INFRA_STANDARD.md` | Dockerfile patterns, CI/CD template, env config conventions | ✅ Cross-project |
 
-**Note:** Phase 2 (Project Planning) does not require a skill document — persona flexibility is preferred for planning. Phase 1 uses `BRD_FORMAT.md` for consistent requirement structure. Phase 7 (UI/UX Design) does not consume a skill but *produces* one (`STYLE_GUIDE.md`).
+**Note:** Phase 2 (Project Planning) does not require a skill document — agent flexibility is preferred for planning. Phase 1 uses `BRD_FORMAT.md` for consistent requirement structure. Phase 7 (UI/UX Design) does not consume a skill but *produces* one (`STYLE_GUIDE.md`).
 
 **Note on Component Library:** This workflow uses Tailwind CSS + shadcn/ui as the design system. This replaces the need for a dedicated shared component library generation phase — the component system already exists. The style guide skill ensures the AI uses it consistently.
 
@@ -159,7 +159,7 @@ When a requirement changes mid-build:
 
 | | |
 |---|---|
-| **Persona** | Business Analyst |
+| **Agent** | Business Analyst |
 | **Skill** | `BRD_FORMAT.md` — BRD structure, module IDs, requirement IDs, Given/When/Then criteria, error states |
 | **Context** | App idea, user stories, stakeholder notes |
 | **Output** | Business Requirements Document (BRD) |
@@ -167,7 +167,7 @@ When a requirement changes mid-build:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Business Analyst.
+AGENT: You are a Senior Business Analyst.
 
 SKILL: Follow the BRD format standard below for document structure, module IDs,
 requirement IDs, acceptance criteria format, and error state documentation.
@@ -179,7 +179,7 @@ User Stories: {INPUT}
 
 TASK: Generate a complete Business Requirements Document:
 - Project overview and objectives
-- User roles and personas
+- User roles and agents
 - User stories for every user-facing interaction (As a / I want to / So that),
   each mapped to a module and page(s)
 - Page Manifest table derived from user stories (page, stories, route)
@@ -199,15 +199,15 @@ TASK: Generate a complete Business Requirements Document:
 
 | | |
 |---|---|
-| **Persona** | Project Manager |
-| **Skill** | None — persona flexibility preferred |
+| **Agent** | Project Manager |
+| **Skill** | None — agent flexibility preferred |
 | **Context** | BRD |
 | **Output** | Project plan, estimates, dependency map |
 | **Gate** | Review estimates for reasonableness |
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Project Manager.
+AGENT: You are a Senior Project Manager.
 
 CONTEXT:
 BRD: {BRD}
@@ -228,7 +228,7 @@ TASK: Generate the following:
 
 | | |
 |---|---|
-| **Persona** | Software Architect |
+| **Agent** | Software Architect |
 | **Skill** | `ARCHITECTURE_STANDARD.md` — naming conventions, error response shape, auth patterns, API route conventions |
 | **Context** | BRD + Phase 2 output (plan, build order) |
 | **Output** | Data models, ERD, API route map, auth strategy, error standards |
@@ -236,7 +236,7 @@ TASK: Generate the following:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Software Architect.
+AGENT: You are a Senior Software Architect.
 
 SKILL: Follow the architecture standards below for all naming conventions,
 error response shapes, auth patterns, and API route conventions.
@@ -264,7 +264,7 @@ TASK: Design the following:
 
 | | |
 |---|---|
-| **Persona** | Backend Engineer |
+| **Agent** | Backend Engineer |
 | **Skill** | `MODULE_TEMPLATE.md` — Step 1 (Prisma Schema) and Naming Conventions only |
 | **Context** | Phase 3 output (data models, ERD, field types, relationships) |
 | **Output** | `prisma/schema/[entity].prisma` files for all models + `npx prisma generate` |
@@ -274,7 +274,7 @@ Run with `all` to process every model in dependency order, or pass a single mode
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Backend Engineer.
+AGENT: You are a Senior Backend Engineer.
 
 SKILL: Follow Step 1 (Prisma Schema) and the Naming Conventions table in MODULE_TEMPLATE.md.
 {MODULE_TEMPLATE.md — Step 1 + Naming Conventions}
@@ -306,7 +306,7 @@ Verify before generating:
 
 | | |
 |---|---|
-| **Persona** | Backend Engineer |
+| **Agent** | Backend Engineer |
 | **Skill** | `MODULE_TEMPLATE.md` — file structure, naming, Zod patterns, controller patterns |
 | **Context** | BRD + Phase 3 output (route map, error standards) + Phase 4a generated Prisma client |
 | **Output** | Zod schemas, routes, controllers, middleware — per module |
@@ -316,7 +316,7 @@ Verify before generating:
 
 **Prompt (run per module, or pass "all" to generate every module in dependency order):**
 ```
-PERSONA: You are a Senior Backend Engineer.
+AGENT: You are a Senior Backend Engineer.
 
 SKILL: Follow the module template below for file structure, naming conventions,
 Zod schema patterns, and controller patterns. Skip Step 1 — Prisma schemas
@@ -347,7 +347,7 @@ If "all", process modules in the same dependency order used in Phase 4a.
 
 | | |
 |---|---|
-| **Persona** | QA Engineer |
+| **Agent** | QA Engineer |
 | **Skill** | `TESTING_CONVENTIONS.md` — behavioral testing approach, file structure, naming, coverage rules |
 | **Context** | BRD (acceptance criteria) + Phase 4 output (modules) |
 | **Output** | Unit tests, integration tests, validation tests |
@@ -355,7 +355,7 @@ If "all", process modules in the same dependency order used in Phase 4a.
 
 **Prompt (run per module, or pass "all" to test every module):**
 ```
-PERSONA: You are a Senior QA Engineer who writes behavioral tests — tests that
+AGENT: You are a Senior QA Engineer who writes behavioral tests — tests that
 verify what the caller/user experiences, not how the code is internally implemented.
 
 SKILL: Follow the testing conventions below for file structure, naming,
@@ -388,7 +388,7 @@ If "all", process modules in the same dependency order used in Phase 4.
 
 | | |
 |---|---|
-| **Persona** | Backend Engineer / DBA |
+| **Agent** | Backend Engineer / DBA |
 | **Skill** | `MIGRATION_TEMPLATE.md` — migration file naming, index conventions, seed data format |
 | **Context** | BRD + Phase 3 output (models, ERD) + Phase 4 finalized modules |
 | **Output** | SQL: migration scripts, rollback scripts, seed data. MongoDB: Prisma seed scripts |
@@ -398,7 +398,7 @@ This phase auto-detects database type from the architecture doc or Prisma `datas
 
 **Prompt (SQL databases — PostgreSQL, MySQL, etc.):**
 ```
-PERSONA: You are a Senior Backend Engineer handling database operations.
+AGENT: You are a Senior Backend Engineer handling database operations.
 
 SKILL: Follow the migration template below for file naming, index conventions,
 and seed data format.
@@ -418,7 +418,7 @@ TASK: Generate the following:
 
 **Prompt (MongoDB — Prisma + MongoDB):**
 ```
-PERSONA: You are a Senior Backend Engineer handling database operations.
+AGENT: You are a Senior Backend Engineer handling database operations.
 
 CONTEXT:
 BRD: {BRD}
@@ -442,7 +442,7 @@ TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 
 | | |
 |---|---|
-| **Persona** | Professional UI Designer |
+| **Agent** | Professional UI Designer |
 | **Skill** | None — this phase *produces* a skill document (`STYLE_GUIDE.md`) used by Phase 9 |
 | **Context** | BRD (Page Manifest from user stories) + Phase 3 output (route map) + optional reference screenshots + optional design rules |
 | **Output** | `docs/ui-design.md` (wireframes, flows, states) + `skills/STYLE_GUIDE.md` (code-ready Tailwind/shadcn rules) |
@@ -452,7 +452,7 @@ TASK: MongoDB is schemaless — skip traditional migrations. Instead:
 
 **Prompt:**
 ```
-PERSONA: You are a Professional UI/UX Designer.
+AGENT: You are a Professional UI/UX Designer.
 
 CONTEXT:
 BRD: {BRD — use the Page Manifest from User Stories as the definitive page list}
@@ -495,7 +495,7 @@ Tailwind CSS classes and shadcn/ui variants:
 
 | | |
 |---|---|
-| **Persona** | Frontend Architect / Engineer |
+| **Agent** | Frontend Architect / Engineer |
 | **Skill** | `API_STANDARD.md` — Zod copy rules, hook patterns, service layer structure, endpoint config |
 | **Context** | BRD + Phase 4 output (Zod schemas — copied from backend) |
 | **Output** | Copied Zod schemas, TypeScript types, hooks, services, endpoint configs, mock data factories |
@@ -503,7 +503,7 @@ Tailwind CSS classes and shadcn/ui variants:
 
 **Prompt (run per module):**
 ```
-PERSONA: You are a Senior Frontend Engineer.
+AGENT: You are a Senior Frontend Engineer.
 
 SKILL: Follow the API_STANDARD below for Zod copy rules, hook patterns,
 service layer structure, and endpoint configuration.
@@ -533,7 +533,7 @@ TASK: Using the backend Zod schemas as the single source of truth:
 
 | | |
 |---|---|
-| **Persona** | Frontend Engineer |
+| **Agent** | Frontend Engineer |
 | **Skill** | Style Guide section of `docs/ui-design.md` (from Phase 7) — ensures visual consistency across independently prompted pages |
 | **Context** | BRD (relevant module only) + `docs/ui-design.md` (wireframe + style guide) + Phase 8 output (hooks, types, mock data) |
 | **Output** | Page components, layout components |
@@ -543,7 +543,7 @@ Each page is prompted individually. The style guide (embedded in `docs/ui-design
 
 **Prompt (run per page):**
 ```
-PERSONA: You are a Senior Frontend Engineer.
+AGENT: You are a Senior Frontend Engineer.
 
 CONTEXT:
 BRD: {BRD — relevant module requirements only}
@@ -571,7 +571,7 @@ TASK: Build the page for {PAGE_NAME}:
 
 | | |
 |---|---|
-| **Persona** | QA Engineer |
+| **Agent** | QA Engineer |
 | **Skill** | `TESTING_CONVENTIONS.md` — behavioral testing approach, component/hook test patterns |
 | **Context** | BRD (acceptance criteria) + Phase 9 output (pages) + Phase 8 output (mock data) |
 | **Output** | Component tests, hook tests, form validation tests |
@@ -579,7 +579,7 @@ TASK: Build the page for {PAGE_NAME}:
 
 **Prompt (run per page/module):**
 ```
-PERSONA: You are a Senior QA Engineer focused on frontend testing. You write
+AGENT: You are a Senior QA Engineer focused on frontend testing. You write
 behavioral tests — test what the user sees and experiences, not component internals.
 
 SKILL: Follow the testing conventions below for file structure, naming,
@@ -611,7 +611,7 @@ TASK: Create the following tests:
 
 | | |
 |---|---|
-| **Persona** | QA Engineer |
+| **Agent** | QA Engineer |
 | **Skill** | `E2E_PATTERNS.md` — selector strategy, fixture structure, flow test patterns |
 | **Context** | BRD + Phase 3 output (route map) + `docs/ui-design.md` (user flows) |
 | **Output** | E2E test suites |
@@ -619,7 +619,7 @@ TASK: Create the following tests:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior QA Engineer writing end-to-end tests.
+AGENT: You are a Senior QA Engineer writing end-to-end tests.
 
 SKILL: Follow the E2E patterns below for selector strategy, fixture structure,
 and flow test organization.
@@ -648,7 +648,7 @@ TASK: Create the following E2E tests:
 
 | | |
 |---|---|
-| **Persona** | Senior Architect / Tech Lead |
+| **Agent** | Senior Architect / Tech Lead |
 | **Skill** | `REVIEW_CHECKLIST.md` — security checks, performance checks, consistency rules |
 | **Context** | BRD + Phase 3 output (architecture) + relevant code |
 | **Output** | Review report, recommended fixes |
@@ -666,7 +666,7 @@ TASK: Create the following E2E tests:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Architect conducting a code review.
+AGENT: You are a Senior Architect conducting a code review.
 
 SKILL: Follow the review checklist below for security, performance,
 and consistency checks.
@@ -693,7 +693,7 @@ TASK: Review the code for:
 
 | | |
 |---|---|
-| **Persona** | Technical Writer |
+| **Agent** | Technical Writer |
 | **Skill** | `DOC_TEMPLATES.md` — README structure, API doc format, onboarding guide template |
 | **Context** | BRD + Phase 3 output (architecture) + Phase 4 output (Zod/routes) |
 | **Output** | README, API docs, deployment guide, onboarding guide |
@@ -701,7 +701,7 @@ TASK: Review the code for:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior Technical Writer.
+AGENT: You are a Senior Technical Writer.
 
 SKILL: Follow the documentation templates below for README structure,
 API doc format, and onboarding guide layout.
@@ -729,7 +729,7 @@ TASK: Generate the following documentation:
 
 | | |
 |---|---|
-| **Persona** | DevOps Engineer |
+| **Agent** | DevOps Engineer |
 | **Skill** | `INFRA_STANDARD.md` — Dockerfile patterns, CI/CD template, env config conventions |
 | **Context** | BRD + Phase 3 output (architecture) + Phase 13 output (env docs) |
 | **Output** | Dockerfiles, CI/CD configs, environment templates |
@@ -737,7 +737,7 @@ TASK: Generate the following documentation:
 
 **Prompt:**
 ```
-PERSONA: You are a Senior DevOps Engineer.
+AGENT: You are a Senior DevOps Engineer.
 
 SKILL: Follow the infrastructure standards below for Dockerfile patterns,
 CI/CD pipeline structure, and environment configuration.
@@ -763,7 +763,7 @@ TASK: Generate the following:
 
 ## Quick Reference
 
-| # | Phase | Persona | Skill | Context | Gate |
+| # | Phase | Agent | Skill | Context | Gate |
 |---|---|---|---|---|---|
 | 1 | Business Requirements | Business Analyst | `BRD_FORMAT` | App idea + user stories | ✅ VERIFY (includes User Stories + Page Manifest) |
 | 2 | Project Planning | Project Manager | — | BRD | Review |

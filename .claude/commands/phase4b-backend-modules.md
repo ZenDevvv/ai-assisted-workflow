@@ -1,4 +1,4 @@
-Adopt the persona defined in `personas/backend-engineer.md`. Read it now before proceeding.
+Adopt the agent defined in `agents/backend-engineer.md`. Read it now before proceeding.
 
 Read the skill doc at `skills/MODULE_TEMPLATE.md` — follow it exactly for file structure, naming, Zod patterns, and controller patterns. Read it now before proceeding.
 
